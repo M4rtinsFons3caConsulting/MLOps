@@ -1,0 +1,608 @@
+{
+  "data_asset_type": null,
+  "expectation_suite_name": "stock_auto_suite",
+  "expectations": [
+    {
+      "expectation_type": "expect_column_to_exist",
+      "kwargs": {
+        "column": "Date"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "Date"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_unique",
+      "kwargs": {
+        "column": "Date"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_to_exist",
+      "kwargs": {
+        "column": "Close"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "Close"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_in_type_list",
+      "kwargs": {
+        "column": "Close",
+        "type_list": [
+          "BIGINT",
+          "BYTEINT",
+          "ByteType()",
+          "INT",
+          "INT64",
+          "INTEGER",
+          "Int16Dtype",
+          "Int32Dtype",
+          "Int64Dtype",
+          "Int8Dtype",
+          "IntegerType",
+          "IntegerType()",
+          "LongType",
+          "LongType()",
+          "SMALLINT",
+          "ShortType()",
+          "TINYINT",
+          "UInt16Dtype",
+          "UInt32Dtype",
+          "UInt64Dtype",
+          "UInt8Dtype",
+          "int",
+          "int16",
+          "int32",
+          "int64",
+          "int8",
+          "int_",
+          "integer",
+          "uint16",
+          "uint32",
+          "uint64",
+          "uint8",
+          "Uint8",
+          "Uint16",
+          "Uint32",
+          "Uint64",
+          "Uint128",
+          "Uint256",
+          "Int8",
+          "Int16",
+          "Int32",
+          "Int64",
+          "Int128",
+          "Int256",
+          "DECIMAL",
+          "DOUBLE",
+          "DOUBLE_PRECISION",
+          "DecimalType()",
+          "DoubleType",
+          "DoubleType()",
+          "FLOAT",
+          "FLOAT4",
+          "FLOAT64",
+          "FLOAT8",
+          "FloatType",
+          "FloatType()",
+          "NUMERIC",
+          "REAL",
+          "float",
+          "float16",
+          "float32",
+          "float64",
+          "float_",
+          "number",
+          "Float32",
+          "Float64"
+        ]
+      },
+      "meta": {
+        "notes": {
+          "content": [
+            "The column values should be stored in one of these types."
+          ],
+          "format": "markdown"
+        }
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_between",
+      "kwargs": {
+        "column": "Close",
+        "max_value": 35.72671127319336,
+        "min_value": 0
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_to_exist",
+      "kwargs": {
+        "column": "High"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "High"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_unique",
+      "kwargs": {
+        "column": "High"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_in_type_list",
+      "kwargs": {
+        "column": "High",
+        "type_list": [
+          "BIGINT",
+          "BYTEINT",
+          "ByteType()",
+          "INT",
+          "INT64",
+          "INTEGER",
+          "Int16Dtype",
+          "Int32Dtype",
+          "Int64Dtype",
+          "Int8Dtype",
+          "IntegerType",
+          "IntegerType()",
+          "LongType",
+          "LongType()",
+          "SMALLINT",
+          "ShortType()",
+          "TINYINT",
+          "UInt16Dtype",
+          "UInt32Dtype",
+          "UInt64Dtype",
+          "UInt8Dtype",
+          "int",
+          "int16",
+          "int32",
+          "int64",
+          "int8",
+          "int_",
+          "integer",
+          "uint16",
+          "uint32",
+          "uint64",
+          "uint8",
+          "Uint8",
+          "Uint16",
+          "Uint32",
+          "Uint64",
+          "Uint128",
+          "Uint256",
+          "Int8",
+          "Int16",
+          "Int32",
+          "Int64",
+          "Int128",
+          "Int256",
+          "DECIMAL",
+          "DOUBLE",
+          "DOUBLE_PRECISION",
+          "DecimalType()",
+          "DoubleType",
+          "DoubleType()",
+          "FLOAT",
+          "FLOAT4",
+          "FLOAT64",
+          "FLOAT8",
+          "FloatType",
+          "FloatType()",
+          "NUMERIC",
+          "REAL",
+          "float",
+          "float16",
+          "float32",
+          "float64",
+          "float_",
+          "number",
+          "Float32",
+          "Float64"
+        ]
+      },
+      "meta": {
+        "notes": {
+          "content": [
+            "The column values should be stored in one of these types."
+          ],
+          "format": "markdown"
+        }
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_between",
+      "kwargs": {
+        "column": "High",
+        "max_value": 36.3588729203866,
+        "min_value": 0
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_to_exist",
+      "kwargs": {
+        "column": "Low"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "Low"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_unique",
+      "kwargs": {
+        "column": "Low"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_in_type_list",
+      "kwargs": {
+        "column": "Low",
+        "type_list": [
+          "BIGINT",
+          "BYTEINT",
+          "ByteType()",
+          "INT",
+          "INT64",
+          "INTEGER",
+          "Int16Dtype",
+          "Int32Dtype",
+          "Int64Dtype",
+          "Int8Dtype",
+          "IntegerType",
+          "IntegerType()",
+          "LongType",
+          "LongType()",
+          "SMALLINT",
+          "ShortType()",
+          "TINYINT",
+          "UInt16Dtype",
+          "UInt32Dtype",
+          "UInt64Dtype",
+          "UInt8Dtype",
+          "int",
+          "int16",
+          "int32",
+          "int64",
+          "int8",
+          "int_",
+          "integer",
+          "uint16",
+          "uint32",
+          "uint64",
+          "uint8",
+          "Uint8",
+          "Uint16",
+          "Uint32",
+          "Uint64",
+          "Uint128",
+          "Uint256",
+          "Int8",
+          "Int16",
+          "Int32",
+          "Int64",
+          "Int128",
+          "Int256",
+          "DECIMAL",
+          "DOUBLE",
+          "DOUBLE_PRECISION",
+          "DecimalType()",
+          "DoubleType",
+          "DoubleType()",
+          "FLOAT",
+          "FLOAT4",
+          "FLOAT64",
+          "FLOAT8",
+          "FloatType",
+          "FloatType()",
+          "NUMERIC",
+          "REAL",
+          "float",
+          "float16",
+          "float32",
+          "float64",
+          "float_",
+          "number",
+          "Float32",
+          "Float64"
+        ]
+      },
+      "meta": {
+        "notes": {
+          "content": [
+            "The column values should be stored in one of these types."
+          ],
+          "format": "markdown"
+        }
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_between",
+      "kwargs": {
+        "column": "Low",
+        "max_value": 34.404924627678774,
+        "min_value": 0
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_to_exist",
+      "kwargs": {
+        "column": "Open"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "Open"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_unique",
+      "kwargs": {
+        "column": "Open"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_in_type_list",
+      "kwargs": {
+        "column": "Open",
+        "type_list": [
+          "BIGINT",
+          "BYTEINT",
+          "ByteType()",
+          "INT",
+          "INT64",
+          "INTEGER",
+          "Int16Dtype",
+          "Int32Dtype",
+          "Int64Dtype",
+          "Int8Dtype",
+          "IntegerType",
+          "IntegerType()",
+          "LongType",
+          "LongType()",
+          "SMALLINT",
+          "ShortType()",
+          "TINYINT",
+          "UInt16Dtype",
+          "UInt32Dtype",
+          "UInt64Dtype",
+          "UInt8Dtype",
+          "int",
+          "int16",
+          "int32",
+          "int64",
+          "int8",
+          "int_",
+          "integer",
+          "uint16",
+          "uint32",
+          "uint64",
+          "uint8",
+          "Uint8",
+          "Uint16",
+          "Uint32",
+          "Uint64",
+          "Uint128",
+          "Uint256",
+          "Int8",
+          "Int16",
+          "Int32",
+          "Int64",
+          "Int128",
+          "Int256",
+          "DECIMAL",
+          "DOUBLE",
+          "DOUBLE_PRECISION",
+          "DecimalType()",
+          "DoubleType",
+          "DoubleType()",
+          "FLOAT",
+          "FLOAT4",
+          "FLOAT64",
+          "FLOAT8",
+          "FloatType",
+          "FloatType()",
+          "NUMERIC",
+          "REAL",
+          "float",
+          "float16",
+          "float32",
+          "float64",
+          "float_",
+          "number",
+          "Float32",
+          "Float64"
+        ]
+      },
+      "meta": {
+        "notes": {
+          "content": [
+            "The column values should be stored in one of these types."
+          ],
+          "format": "markdown"
+        }
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_between",
+      "kwargs": {
+        "column": "Open",
+        "max_value": 35.975744649360394,
+        "min_value": 0
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_to_exist",
+      "kwargs": {
+        "column": "Volume"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "Volume"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_unique",
+      "kwargs": {
+        "column": "Volume"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_in_type_list",
+      "kwargs": {
+        "column": "Volume",
+        "type_list": [
+          "BIGINT",
+          "BYTEINT",
+          "ByteType()",
+          "INT",
+          "INT64",
+          "INTEGER",
+          "Int16Dtype",
+          "Int32Dtype",
+          "Int64Dtype",
+          "Int8Dtype",
+          "IntegerType",
+          "IntegerType()",
+          "LongType",
+          "LongType()",
+          "SMALLINT",
+          "ShortType()",
+          "TINYINT",
+          "UInt16Dtype",
+          "UInt32Dtype",
+          "UInt64Dtype",
+          "UInt8Dtype",
+          "int",
+          "int16",
+          "int32",
+          "int64",
+          "int8",
+          "int_",
+          "integer",
+          "uint16",
+          "uint32",
+          "uint64",
+          "uint8",
+          "Uint8",
+          "Uint16",
+          "Uint32",
+          "Uint64",
+          "Uint128",
+          "Uint256",
+          "Int8",
+          "Int16",
+          "Int32",
+          "Int64",
+          "Int128",
+          "Int256",
+          "DECIMAL",
+          "DOUBLE",
+          "DOUBLE_PRECISION",
+          "DecimalType()",
+          "DoubleType",
+          "DoubleType()",
+          "FLOAT",
+          "FLOAT4",
+          "FLOAT64",
+          "FLOAT8",
+          "FloatType",
+          "FloatType()",
+          "NUMERIC",
+          "REAL",
+          "float",
+          "float16",
+          "float32",
+          "float64",
+          "float_",
+          "number",
+          "Float32",
+          "Float64"
+        ]
+      },
+      "meta": {
+        "notes": {
+          "content": [
+            "The column values should be stored in one of these types."
+          ],
+          "format": "markdown"
+        }
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_between",
+      "kwargs": {
+        "column": "Volume",
+        "max_value": 313645800,
+        "min_value": 0
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_to_exist",
+      "kwargs": {
+        "column": "Symbol"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "Symbol"
+      },
+      "meta": {}
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_in_set",
+      "kwargs": {
+        "column": "Symbol",
+        "value_set": [
+          "MSFT"
+        ]
+      },
+      "meta": {}
+    }
+  ],
+  "ge_cloud_id": null,
+  "meta": {
+    "great_expectations_version": "0.17.23"
+  }
+}

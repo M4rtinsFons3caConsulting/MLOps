@@ -1,0 +1,7 @@
+# This is a parameters config generated for pipeline 'data_wrangling'
+# using Kedro 0.19.14.
+#
+# Documentation for this file format can be found in "Parameters"
+# Link: https://docs.kedro.org/en/0.19.14/configuration/parameters.html
+
+raw_data_dir: data/01_raw
