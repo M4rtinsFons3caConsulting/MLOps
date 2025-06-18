@@ -327,7 +327,7 @@
           "float",
           "float16",
           "float32",
-          "float64",
+          "float64",Date,Close,High,Low,Open,Volume,Symbol
           "float_",
           "number",
           "Float32",

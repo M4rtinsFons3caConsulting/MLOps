@@ -4,7 +4,6 @@ generated using Kedro 0.19.14
 """
 
 import yfinance as yf
-import pandas as pd
 
 def collect_data(
     symbols: list
@@ -17,9 +16,11 @@ def collect_data(
 
         # Standardize column names
         if len(symbol_df.columns) == 6:
-            symbol_df.columns = ['Close', 'High', 'Low', 'Open', 'Adj Close', 'Volume']
+            symbol_df.columns = ['close', 'high', 'low', 'open', 'adj_close', 'volume']
         else:
-            symbol_df.columns = ['Close', 'High', 'Low', 'Open', 'Volume']
+            symbol_df.columns = ['close', 'high', 'low', 'open', 'volume']
+
+        symbol_df.index.name = 'date'
 
         data[f"{symbol}.csv"] = symbol_df
 

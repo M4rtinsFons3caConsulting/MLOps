@@ -1,5 +1,5 @@
 """
-This is a test file for pipeline 'data_wrangling'
+This is a boilerplate test file for pipeline 'data_scalling'
 generated using Kedro 0.19.14.
 Please add your pipeline tests here.
 

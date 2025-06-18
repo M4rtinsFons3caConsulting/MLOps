@@ -24,7 +24,7 @@ def combine_files(
 
     for file in csv_files:
         df = pd.read_csv(file)
-        df["Symbol"] = file.stem
+        df["symbol"] = file.stem
         dataframes.append(df)
         filenames.append(file.name)
 
@@ -35,11 +35,6 @@ def combine_files(
     mlflow.log_param("input_file_names", filenames)
     mlflow.log_metric("combined_rows", merged_df.shape[0])
     mlflow.log_metric("combined_cols", merged_df.shape[1])
-
-    # Save the data
-    preview_path = "data/02_intermediate/stock.csv"
-    merged_df.to_csv(preview_path, index=False)
-    mlflow.log_artifact(preview_path, artifact_path="previews")
 
     logger.info(f"Merged {len(filenames)} files from '{raw_data_dir}' into shape {merged_df.shape}")
 

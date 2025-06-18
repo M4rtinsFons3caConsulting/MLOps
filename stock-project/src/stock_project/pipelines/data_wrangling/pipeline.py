@@ -11,7 +11,7 @@ def create_pipeline(**kwargs) -> Pipeline:
         node(
             func=combine_files
             ,inputs="params:raw_data_dir"
-            ,outputs="combined_raw_data"
+            ,outputs="ingested_data"
             ,name="combine_raw_files_node"
         )
     ])

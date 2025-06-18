@@ -20,7 +20,25 @@ raw_data:
 ingested_data:
   type: kedro_datasets.pandas.CSVDataset
   filepath: data/02_intermediate/stock.csv
+  load_args:
+    parse_dates:
+      - date
+    dtype:
+      symbol: string
+      volume: int
 
 reporting_tests:
   type: kedro_datasets.pandas.CSVDataset
   filepath: data/08_reporting/data_tests.csv
+
+engineered_data:
+  type: kedro_datasets.pandas.CSVDataset
+  filepath: data/03_primary/stock_engineered.csv
+  load_args:
+    parse_dates:
+      - date
+    dtype:
+      symbol: string
+      volume: int
+  save_args:
+    index: True
