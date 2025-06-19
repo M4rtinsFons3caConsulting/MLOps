@@ -33,7 +33,7 @@ reporting_tests:
 
 engineered_data:
   type: kedro_datasets.pandas.CSVDataset
-  filepath: data/03_primary/stock_engineered.csv
+  filepath: data/02_intermediate/stock_engineered.csv
   load_args:
     parse_dates:
       - date
@@ -42,3 +42,38 @@ engineered_data:
       volume: int
   save_args:
     index: True
+
+labels:
+  type: kedro_datasets.pandas.CSVDataset
+  filepath: data/02_intermediate/labels.csv
+  load_args:
+    parse_dates:
+      - date
+
+widden_data:
+  type: kedro_datasets.pandas.CSVDataset
+  filepath: data/02_intermediate/stock_wide.csv
+  load_args:
+    parse_dates:
+      - date
+
+preprocessed_data:
+  type: kedro_datasets.pandas.CSVDataset
+  filepath: data/03_primary/stock_preprocessed.csv
+  load_args:
+    parse_dates:
+      - date
+
+stock_train:
+  type: kedro_datasets.pandas.CSVDataset
+  filepath: data/03_primary/stock_train.csv
+  load_args:
+    parse_dates:
+      - date
+
+stock_test:
+  type: kedro_datasets.pandas.CSVDataset
+  filepath: data/03_primary/stock_test.csv
+  load_args:
+    parse_dates:
+      - date

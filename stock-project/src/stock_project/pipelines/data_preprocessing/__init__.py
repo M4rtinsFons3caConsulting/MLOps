@@ -1,5 +1,5 @@
 """
-This is a pipeline 'data_engineering'
+This is a pipeline 'data_preprocessing'
 generated using Kedro 0.19.14
 """
 

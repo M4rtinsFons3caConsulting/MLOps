@@ -1,5 +1,8 @@
-# This is a boilerplate parameters config generated for pipeline 'data_scalling'
+# This is a parameters config generated for pipeline 'data_engineering'
 # using Kedro 0.19.14.
 #
 # Documentation for this file format can be found in "Parameters"
 # Link: https://docs.kedro.org/en/0.19.14/configuration/parameters.html
+
+prediction_horizon: 5
+threshold: 0.01

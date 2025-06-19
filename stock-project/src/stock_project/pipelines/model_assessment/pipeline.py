@@ -1,5 +1,5 @@
 """
-This is a boilerplate pipeline 'data_scalling'
+This is a boilerplate pipeline 'model_assessment'
 generated using Kedro 0.19.14
 """
 
