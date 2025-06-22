@@ -1,15 +1,19 @@
 """Project pipelines."""
+from typing import Dict
+from kedro.pipeline import Pipeline, pipeline
 
-from kedro.framework.project import find_pipelines
-from kedro.pipeline import Pipeline
+from stock_project.pipelines import (
+    data_ingestion as ingestion
+)
 
-
-def register_pipelines() -> dict[str, Pipeline]:
+def register_pipelines() -> Dict[str, Pipeline]:
     """Register the project's pipelines.
 
     Returns:
-        A mapping from pipeline names to ``Pipeline`` objects.
+        A mapping from a pipeline name to a ``Pipeline`` object.
     """
-    pipelines = find_pipelines()
-    pipelines["__default__"] = sum(pipelines.values())
-    return pipelines
+    ingestion_pipeline = ingestion.create_pipeline()
+
+    return {
+        "ingestion": ingestion_pipeline,
+    }

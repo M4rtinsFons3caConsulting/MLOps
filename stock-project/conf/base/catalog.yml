@@ -10,22 +10,12 @@
 # https://docs.kedro.org/en/stable/data/data_catalog.html
 
 raw_data:
-  type: partitions.PartitionedDataset
-  path: data/01_raw
-  dataset:
-    type: kedro_datasets.pandas.CSVDataset
-    save_args:
-      index: True
-
-ingested_data:
   type: kedro_datasets.pandas.CSVDataset
-  filepath: data/02_intermediate/stock.csv
-  load_args:
-    parse_dates:
-      - date
-    dtype:
-      symbol: string
-      volume: int
+  filepath: data/01_raw/ticker_data.csv
+
+last_ingestion_date:
+  type: pickle.PickleDataset
+  filepath: data/00_metadata/last_ingestion_date.pkl
 
 reporting_tests:
   type: kedro_datasets.pandas.CSVDataset
