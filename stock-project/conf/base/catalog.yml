@@ -12,6 +12,12 @@
 raw_data:
   type: kedro_datasets.pandas.CSVDataset
   filepath: data/01_raw/ticker_data.csv
+  load_args:
+    parse_dates:
+      - date
+    dtype:
+      symbol: string
+      volume: int
 
 last_ingestion_date:
   type: pickle.PickleDataset
@@ -20,32 +26,6 @@ last_ingestion_date:
 reporting_tests:
   type: kedro_datasets.pandas.CSVDataset
   filepath: data/08_reporting/data_tests.csv
-
-engineered_data:
-  type: kedro_datasets.pandas.CSVDataset
-  filepath: data/02_intermediate/stock_engineered.csv
-  load_args:
-    parse_dates:
-      - date
-    dtype:
-      symbol: string
-      volume: int
-  save_args:
-    index: True
-
-labels:
-  type: kedro_datasets.pandas.CSVDataset
-  filepath: data/02_intermediate/labels.csv
-  load_args:
-    parse_dates:
-      - date
-
-widden_data:
-  type: kedro_datasets.pandas.CSVDataset
-  filepath: data/02_intermediate/stock_wide.csv
-  load_args:
-    parse_dates:
-      - date
 
 preprocessed_data:
   type: kedro_datasets.pandas.CSVDataset

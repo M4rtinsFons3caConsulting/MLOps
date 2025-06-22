@@ -15,6 +15,7 @@ from kedro.io.core import DatasetError
 from kedro.config import OmegaConfigLoader
 from kedro.framework.project import settings
 
+# Logging
 import mlflow
 
 # Expectations
@@ -33,7 +34,7 @@ credentials = conf_loader["credentials"]
 # Logger
 logger = logging.getLogger(__name__)
 
-# TODO: MLFLOW, LOGGING, DOCSTRING, DOCUMENTATION, CATALOG, PARAMS
+# TODO: DOCUMENTATION
 
 def build_expectation_suite(
     df
@@ -171,7 +172,7 @@ def collect_yf_data(
     symbols: List[str],
     user_start_date: str,
     last_ingestion_date=None,
-    is_to_feature_store=False
+    is_to_feature_store: bool = False
 ) -> tuple[pd.DataFrame, str]:
     """
     Ingests yfinance data starting from max(user_start_date, last_ingestion_date)
@@ -206,136 +207,140 @@ def collect_yf_data(
         mlflow.log_param("effective_start", str(effective_start))
         mlflow.log_param("last_ingestion_date", last_ingestion_date)
 
-    # Catch all
-    concatenate = False
-    if isinstance(last_data_ingested, pd.DataFrame):
-        concatenate = True
+        # Catch all
+        concatenate = False
+        if isinstance(last_data_ingested, pd.DataFrame):
+            concatenate = True
 
-    if not last_ingestion_date:
-        effective_start = datetime.strptime(user_start_date, date_format).date()
-    else:
-        # Infer effective start
-        effective_start = max(
-            datetime.strptime(user_start_date, date_format).date(),
-            datetime.strptime(last_ingestion_date, date_format).date()
-        )
-
-        effective_start = effective_start + timedelta(days=1)
-
-    def last_business_day(ref_date: date) -> date:
-        # Get last 5 business days up to ref_date
-        bdays = pd.bdate_range(end=ref_date, periods=1)
-        return bdays[-1].date()
-
-    if effective_start >= last_business_day(date.today()):
-        # no need to download
-        logger.info(f"No data returned starting from {effective_start}")
-        
-        return last_data_ingested, last_ingestion_date
-        
-    else:
-        logger.info(f"Starting data ingestion for symbols: {symbols}")
-        logger.info(f"Downloading data from yfinance starting from {effective_start}")
-
-        # Ingestion
-        data = yf.download(
-            tickers=symbols,
-            start=effective_start.strftime(date_format),
-            group_by="ticker",
-            auto_adjust=False,
-            progress=False
-        )
-
-        mlflow.log_metric("num_new_records", len(data))
-        logger.info(f"Finished downloading data. Number of records: {len(data)}")
-
-        # Reformat into long format with ticker column
-        data = (
-            data
-            .stack(level=0)
-            .rename_axis(['date', 'symbol'])
-            .reset_index()
-            .rename(columns=str.lower)
-        )
-
-        logger.info(f"Reformatted data to long format. Shape: {data.shape}")
-
-        # Select only ohlcv
-        data = data[['date', 'symbol', 'open', 'high', 'low', 'close', 'volume']]
-
-        # Infer latest available date from actual data
-        latest_available_date = data['date'].max().date().strftime(date_format)
-        
-        # Append the data as new if data is present
-        if concatenate:
-            logger.info(f"Inserted {len(data)} columns.")
-            data = pd.concat(
-                [last_data_ingested
-                , data]
-            , axis=0
+        if not last_ingestion_date:
+            effective_start = datetime.strptime(user_start_date, date_format).date()
+        else:
+            # Infer effective start
+            effective_start = max(
+                datetime.strptime(user_start_date, date_format).date(),
+                datetime.strptime(last_ingestion_date, date_format).date()
             )
 
-    logger.info(f"Dataset currently contains {len(data.columns)} columns.")
+            effective_start = effective_start + timedelta(days=1)
 
-    ### --------------------------------- SETTING EXPECTATIONS ---------------------------------###
-    # Getting the features
-    numerical_features = data.select_dtypes(exclude=['object','string','category']).columns.tolist()
-    numerical_features.remove('date')
-    categorical_features = data.select_dtypes(include=['object','string','category']).columns.tolist()
-    
-    # Setting the feature store
-    data_numeric = data.drop(
-        columns=categorical_features
-    )
-    data_categorical = data.drop(
-        columns=numerical_features
-    )
+        def last_business_day(ref_date: date) -> date:
+            # Get last 5 business days up to ref_date
+            bdays = pd.bdate_range(end=ref_date, periods=1)
+            return bdays[-1].date()
 
-    # Building expectations suites
-    validation_expectation_suite_numerical = build_expectation_suite(
-        df=data_numeric
-        ,suite_name="numerical_expectations"
-        ,datasource_name="numerical_features"
-        ,data_asset_name="numerical_features_asset"
-    )
-    validation_expectation_suite_categorical = build_expectation_suite(
-        df=data_categorical
-        ,suite_name="categorical_expectations"
-        ,datasource_name="categorical_features"
-        ,data_asset_name="categorical_features_asset"
-    )
+        if effective_start >= last_business_day(date.today()):
+            # no need to download
+            logger.info(f"No data returned starting from {effective_start}")
+            
+            return last_data_ingested, last_ingestion_date
+            
+        else:
+            logger.info(f"Starting data ingestion for symbols: {symbols}")
+            logger.info(f"Downloading data from yfinance starting from {effective_start}")
 
-    context_root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../gx"))
-    mlflow.log_artifacts(context_root_dir, artifact_path="great_expectations")
-    
-    numerical_feature_descriptions = []
-    categorical_feature_descriptions = []
+            # Ingestion
+            data = yf.download(
+                tickers=symbols,
+                start=effective_start.strftime(date_format),
+                group_by="ticker",
+                auto_adjust=False,
+                progress=False
+            )
 
-    if is_to_feature_store:
-        logger.info("Uploading numerical features to feature store...")
+            mlflow.log_metric("num_new_records", len(data))
+            logger.info(f"Finished downloading data. Number of records: {len(data)}")
 
-        object_fs_numerical_features = to_feature_store(
-            data_numeric,"numerical_features",
-            1,"Numerical Features",
-            numerical_feature_descriptions,
-            validation_expectation_suite_numerical,
-            credentials["feature_store"]
+            # Reformat into long format with ticker column
+            data = (
+                data
+                .stack(level=0)
+                .rename_axis(['date', 'symbol'])
+                .reset_index()
+                .rename(columns=str.lower)
+            )
+
+            logger.info(f"Reformatted data to long format. Shape: {data.shape}")
+
+            # Select only ohlcv
+            data = data[['date', 'symbol', 'open', 'high', 'low', 'close', 'volume']]
+
+            # Infer latest available date from actual data
+            latest_available_date = data['date'].max().date().strftime(date_format)
+            
+            # Append the data as new if data is present
+            if concatenate:
+                logger.info(f"Inserted {len(data)} columns.")
+                data = pd.concat(
+                    [last_data_ingested
+                    , data]
+                , axis=0
+                )
+
+        logger.info(f"Dataset currently contains {len(data.columns)} columns.")
+
+        ### --------------------------------- SETTING EXPECTATIONS ---------------------------------###
+        # Getting the features
+        numerical_features = data.select_dtypes(exclude=['object','string','category']).columns.tolist()
+        numerical_features.remove('date')
+        categorical_features = data.select_dtypes(include=['object','string','category']).columns.tolist()
+        
+        # Setting the feature store
+        data_numeric = data.drop(
+            columns=categorical_features
+        )
+        data_categorical = data.drop(
+            columns=numerical_features
         )
 
-        logger.info("Numerical features upload complete.")
-
-        logger.info("Uploading categorical features to feature store...")
-
-        object_fs_categorical_features = to_feature_store(
-            data_categorical,"categorical_features",
-            1,"Categorical Features",
-            categorical_feature_descriptions,
-            validation_expectation_suite_categorical,
-            credentials["feature_store"]
+        # Building expectations suites
+        validation_expectation_suite_numerical = build_expectation_suite(
+            df=data_numeric
+            ,suite_name="numerical_expectations"
+            ,datasource_name="numerical_features"
+            ,data_asset_name="numerical_features_asset"
+        )
+        validation_expectation_suite_categorical = build_expectation_suite(
+            df=data_categorical
+            ,suite_name="categorical_expectations"
+            ,datasource_name="categorical_features"
+            ,data_asset_name="categorical_features_asset"
         )
 
-        logger.info("Categorical features upload complete.")
+        context_root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../gx"))
+        mlflow.log_artifacts(context_root_dir, artifact_path="great_expectations")
+        
+        numerical_feature_descriptions = []
+        categorical_feature_descriptions = []
 
-    logger.info("Data ingestion complete. Returning dataset and latest available date.")
+        if is_to_feature_store:
+            logger.info("Uploading numerical features to feature store...")
 
-    return data, latest_available_date
+            object_fs_numerical_features = to_feature_store(
+                data_numeric
+                ,"numerical_features"
+                ,1
+                ,"Numerical Features"
+                ,numerical_feature_descriptions
+                ,validation_expectation_suite_numerical
+                ,credentials["feature_store"]
+            )
+
+            logger.info("Numerical features upload complete.")
+
+            logger.info("Uploading categorical features to feature store...")
+
+            object_fs_categorical_features = to_feature_store(
+                data_categorical
+                ,"categorical_features"
+                ,1
+                ,"Categorical Features"
+                ,categorical_feature_descriptions
+                ,validation_expectation_suite_categorical
+                ,credentials["feature_store"]
+            )
+
+            logger.info("Categorical features upload complete.")
+
+        logger.info("Data ingestion complete. Returning dataset and latest available date.")
+
+        return data, latest_available_date

@@ -4,6 +4,7 @@ from kedro.pipeline import Pipeline, pipeline
 
 from stock_project.pipelines import (
     data_ingestion as ingestion
+    ,data_preprocessing as preprocessing
 )
 
 def register_pipelines() -> Dict[str, Pipeline]:
@@ -13,7 +14,9 @@ def register_pipelines() -> Dict[str, Pipeline]:
         A mapping from a pipeline name to a ``Pipeline`` object.
     """
     ingestion_pipeline = ingestion.create_pipeline()
+    preprocessing_pipeline = preprocessing.create_pipeline()
 
     return {
-        "ingestion": ingestion_pipeline,
+        "ingestion": ingestion_pipeline
+        ,"preprocess": preprocessing_pipeline
     }

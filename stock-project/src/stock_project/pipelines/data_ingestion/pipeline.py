@@ -29,9 +29,12 @@ def create_pipeline(**kwargs) -> Pipeline:
             ,inputs=dict(
                 symbols="params:symbols"
                 , user_start_date="params:user_start_date"
-                , is_to_feature_store="params:to_feature_store"
+                , is_to_feature_store="params:is_to_feature_store"
             )
-            ,outputs=["raw_data", "last_ingestion_date"]
+            ,outputs=[
+                "raw_data"
+                ,"last_ingestion_date"
+            ]
             ,name="collect_data_node"
         )
     ])

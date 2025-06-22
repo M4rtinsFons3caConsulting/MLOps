@@ -10,4 +10,3 @@ symbols:
   - MSFT
 
 user_start_date: "2000-01-01"
-to_feature_store: True

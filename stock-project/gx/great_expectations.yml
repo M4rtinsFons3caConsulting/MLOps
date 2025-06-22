@@ -115,6 +115,12 @@ fluent_datasources:
       categorical_features_asset:
         type: dataframe
         batch_metadata: {}
+  target_feature:
+    type: pandas
+    assets:
+      target_feature_asset:
+        type: dataframe
+        batch_metadata: {}
 notebooks:
 include_rendered_content:
   globally: false
