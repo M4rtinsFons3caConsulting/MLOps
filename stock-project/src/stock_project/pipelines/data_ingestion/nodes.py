@@ -234,10 +234,8 @@ def collect_yf_data(
         return last_data_ingested, last_ingestion_date
         
     else:
-        is_data_available = True
-
-        logger.info("Starting data ingestion for symbols: {symbols}")
-        logger.info("Downloading data from yfinance starting from {effective_start}")
+        logger.info(f"Starting data ingestion for symbols: {symbols}")
+        logger.info(f"Downloading data from yfinance starting from {effective_start}")
 
         # Ingestion
         data = yf.download(
@@ -249,7 +247,7 @@ def collect_yf_data(
         )
 
         mlflow.log_metric("num_new_records", len(data))
-        logger.info("Finished downloading data. Number of records: {len(data)}")
+        logger.info(f"Finished downloading data. Number of records: {len(data)}")
 
         # Reformat into long format with ticker column
         data = (
@@ -260,7 +258,7 @@ def collect_yf_data(
             .rename(columns=str.lower)
         )
 
-        logger.info("Reformatted data to long format. Shape: {data.shape}")
+        logger.info(f"Reformatted data to long format. Shape: {data.shape}")
 
         # Select only ohlcv
         data = data[['date', 'symbol', 'open', 'high', 'low', 'close', 'volume']]
@@ -279,65 +277,64 @@ def collect_yf_data(
 
     logger.info(f"Dataset currently contains {len(data.columns)} columns.")
 
-    if is_data_available:
-        ### --------------------------------- SETTING EXPECTATIONS ---------------------------------###
-        # Getting the features
-        numerical_features = data.select_dtypes(exclude=['object','string','category']).columns.tolist()
-        numerical_features.remove('date')
-        categorical_features = data.select_dtypes(include=['object','string','category']).columns.tolist()
-        
-        # Setting the feature store
-        data_numeric = data.drop(
-            columns=categorical_features
+    ### --------------------------------- SETTING EXPECTATIONS ---------------------------------###
+    # Getting the features
+    numerical_features = data.select_dtypes(exclude=['object','string','category']).columns.tolist()
+    numerical_features.remove('date')
+    categorical_features = data.select_dtypes(include=['object','string','category']).columns.tolist()
+    
+    # Setting the feature store
+    data_numeric = data.drop(
+        columns=categorical_features
+    )
+    data_categorical = data.drop(
+        columns=numerical_features
+    )
+
+    # Building expectations suites
+    validation_expectation_suite_numerical = build_expectation_suite(
+        df=data_numeric
+        ,suite_name="numerical_expectations"
+        ,datasource_name="numerical_features"
+        ,data_asset_name="numerical_features_asset"
+    )
+    validation_expectation_suite_categorical = build_expectation_suite(
+        df=data_categorical
+        ,suite_name="categorical_expectations"
+        ,datasource_name="categorical_features"
+        ,data_asset_name="categorical_features_asset"
+    )
+
+    context_root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../gx"))
+    mlflow.log_artifacts(context_root_dir, artifact_path="great_expectations")
+    
+    numerical_feature_descriptions = []
+    categorical_feature_descriptions = []
+
+    if is_to_feature_store:
+        logger.info("Uploading numerical features to feature store...")
+
+        object_fs_numerical_features = to_feature_store(
+            data_numeric,"numerical_features",
+            1,"Numerical Features",
+            numerical_feature_descriptions,
+            validation_expectation_suite_numerical,
+            credentials["feature_store"]
         )
-        data_categorical = data.drop(
-            columns=numerical_features
+
+        logger.info("Numerical features upload complete.")
+
+        logger.info("Uploading categorical features to feature store...")
+
+        object_fs_categorical_features = to_feature_store(
+            data_categorical,"categorical_features",
+            1,"Categorical Features",
+            categorical_feature_descriptions,
+            validation_expectation_suite_categorical,
+            credentials["feature_store"]
         )
 
-        # Building expectations suites
-        validation_expectation_suite_numerical = build_expectation_suite(
-            df=data_numeric
-            ,suite_name="numerical_expectations"
-            ,datasource_name="numerical_features"
-            ,data_asset_name="numerical_features_asset"
-        )
-        validation_expectation_suite_categorical = build_expectation_suite(
-            df=data_categorical
-            ,suite_name="categorical_expectations"
-            ,datasource_name="categorical_features"
-            ,data_asset_name="categorical_features_asset"
-        )
-
-        context_root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../gx"))
-        mlflow.log_artifacts(context_root_dir, artifact_path="great_expectations")
-        
-        numerical_feature_descriptions =[]
-        categorical_feature_descriptions =[]
-
-        if is_to_feature_store:
-            logger.info("Uploading numerical features to feature store...")
-
-            object_fs_numerical_features = to_feature_store(
-                data_numeric,"numerical_features",
-                1,"Numerical Features",
-                numerical_feature_descriptions,
-                validation_expectation_suite_numerical,
-                credentials["feature_store"]
-            )
-
-            logger.info("Numerical features upload complete.")
-
-            logger.info("Uploading categorical features to feature store...")
-
-            object_fs_categorical_features = to_feature_store(
-                data_categorical,"categorical_features",
-                1,"Categorical Features",
-                categorical_feature_descriptions,
-                validation_expectation_suite_categorical,
-                credentials["feature_store"]
-            )
-
-            logger.info("Categorical features upload complete.")
+        logger.info("Categorical features upload complete.")
 
     logger.info("Data ingestion complete. Returning dataset and latest available date.")
 
