@@ -1,46 +1,49 @@
 {
   "data_asset_type": null,
-  "expectation_suite_name": "stock_auto_suite",
+  "expectation_suite_name": "numerical_expectations",
   "expectations": [
     {
       "expectation_type": "expect_column_to_exist",
       "kwargs": {
-        "column": "Date"
+        "column": "date"
       },
       "meta": {}
     },
     {
       "expectation_type": "expect_column_values_to_not_be_null",
       "kwargs": {
-        "column": "Date"
+        "column": "date"
       },
       "meta": {}
     },
     {
-      "expectation_type": "expect_column_values_to_be_unique",
+      "expectation_type": "expect_column_values_to_be_between",
       "kwargs": {
-        "column": "Date"
+        "column": "date",
+        "max_value": "2025-06-20 00:00:00",
+        "min_value": "2000-01-03 00:00:00",
+        "parse_strings_as_datetimes": true
       },
       "meta": {}
     },
     {
       "expectation_type": "expect_column_to_exist",
       "kwargs": {
-        "column": "Close"
+        "column": "open"
       },
       "meta": {}
     },
     {
       "expectation_type": "expect_column_values_to_not_be_null",
       "kwargs": {
-        "column": "Close"
+        "column": "open"
       },
       "meta": {}
     },
     {
       "expectation_type": "expect_column_values_to_be_in_type_list",
       "kwargs": {
-        "column": "Close",
+        "column": "open",
         "type_list": [
           "BIGINT",
           "BYTEINT",
@@ -122,8 +125,8 @@
     {
       "expectation_type": "expect_column_values_to_be_between",
       "kwargs": {
-        "column": "Close",
-        "max_value": 35.72671127319336,
+        "column": "open",
+        "max_value": 539.72998046875,
         "min_value": 0
       },
       "meta": {}
@@ -131,28 +134,21 @@
     {
       "expectation_type": "expect_column_to_exist",
       "kwargs": {
-        "column": "High"
+        "column": "high"
       },
       "meta": {}
     },
     {
       "expectation_type": "expect_column_values_to_not_be_null",
       "kwargs": {
-        "column": "High"
-      },
-      "meta": {}
-    },
-    {
-      "expectation_type": "expect_column_values_to_be_unique",
-      "kwargs": {
-        "column": "High"
+        "column": "high"
       },
       "meta": {}
     },
     {
       "expectation_type": "expect_column_values_to_be_in_type_list",
       "kwargs": {
-        "column": "High",
+        "column": "high",
         "type_list": [
           "BIGINT",
           "BYTEINT",
@@ -234,8 +230,8 @@
     {
       "expectation_type": "expect_column_values_to_be_between",
       "kwargs": {
-        "column": "High",
-        "max_value": 36.3588729203866,
+        "column": "high",
+        "max_value": 540.8099975585938,
         "min_value": 0
       },
       "meta": {}
@@ -243,140 +239,21 @@
     {
       "expectation_type": "expect_column_to_exist",
       "kwargs": {
-        "column": "Low"
+        "column": "low"
       },
       "meta": {}
     },
     {
       "expectation_type": "expect_column_values_to_not_be_null",
       "kwargs": {
-        "column": "Low"
-      },
-      "meta": {}
-    },
-    {
-      "expectation_type": "expect_column_values_to_be_unique",
-      "kwargs": {
-        "column": "Low"
+        "column": "low"
       },
       "meta": {}
     },
     {
       "expectation_type": "expect_column_values_to_be_in_type_list",
       "kwargs": {
-        "column": "Low",
-        "type_list": [
-          "BIGINT",
-          "BYTEINT",
-          "ByteType()",
-          "INT",
-          "INT64",
-          "INTEGER",
-          "Int16Dtype",
-          "Int32Dtype",
-          "Int64Dtype",
-          "Int8Dtype",
-          "IntegerType",
-          "IntegerType()",
-          "LongType",
-          "LongType()",
-          "SMALLINT",
-          "ShortType()",
-          "TINYINT",
-          "UInt16Dtype",
-          "UInt32Dtype",
-          "UInt64Dtype",
-          "UInt8Dtype",
-          "int",
-          "int16",
-          "int32",
-          "int64",
-          "int8",
-          "int_",
-          "integer",
-          "uint16",
-          "uint32",
-          "uint64",
-          "uint8",
-          "Uint8",
-          "Uint16",
-          "Uint32",
-          "Uint64",
-          "Uint128",
-          "Uint256",
-          "Int8",
-          "Int16",
-          "Int32",
-          "Int64",
-          "Int128",
-          "Int256",
-          "DECIMAL",
-          "DOUBLE",
-          "DOUBLE_PRECISION",
-          "DecimalType()",
-          "DoubleType",
-          "DoubleType()",
-          "FLOAT",
-          "FLOAT4",
-          "FLOAT64",
-          "FLOAT8",
-          "FloatType",
-          "FloatType()",
-          "NUMERIC",
-          "REAL",
-          "float",
-          "float16",
-          "float32",
-          "float64",Date,Close,High,Low,Open,Volume,Symbol
-          "float_",
-          "number",
-          "Float32",
-          "Float64"
-        ]
-      },
-      "meta": {
-        "notes": {
-          "content": [
-            "The column values should be stored in one of these types."
-          ],
-          "format": "markdown"
-        }
-      }
-    },
-    {
-      "expectation_type": "expect_column_values_to_be_between",
-      "kwargs": {
-        "column": "Low",
-        "max_value": 34.404924627678774,
-        "min_value": 0
-      },
-      "meta": {}
-    },
-    {
-      "expectation_type": "expect_column_to_exist",
-      "kwargs": {
-        "column": "Open"
-      },
-      "meta": {}
-    },
-    {
-      "expectation_type": "expect_column_values_to_not_be_null",
-      "kwargs": {
-        "column": "Open"
-      },
-      "meta": {}
-    },
-    {
-      "expectation_type": "expect_column_values_to_be_unique",
-      "kwargs": {
-        "column": "Open"
-      },
-      "meta": {}
-    },
-    {
-      "expectation_type": "expect_column_values_to_be_in_type_list",
-      "kwargs": {
-        "column": "Open",
+        "column": "low",
         "type_list": [
           "BIGINT",
           "BYTEINT",
@@ -458,8 +335,8 @@
     {
       "expectation_type": "expect_column_values_to_be_between",
       "kwargs": {
-        "column": "Open",
-        "max_value": 35.975744649360394,
+        "column": "low",
+        "max_value": 536.4600219726562,
         "min_value": 0
       },
       "meta": {}
@@ -467,28 +344,21 @@
     {
       "expectation_type": "expect_column_to_exist",
       "kwargs": {
-        "column": "Volume"
+        "column": "close"
       },
       "meta": {}
     },
     {
       "expectation_type": "expect_column_values_to_not_be_null",
       "kwargs": {
-        "column": "Volume"
-      },
-      "meta": {}
-    },
-    {
-      "expectation_type": "expect_column_values_to_be_unique",
-      "kwargs": {
-        "column": "Volume"
+        "column": "close"
       },
       "meta": {}
     },
     {
       "expectation_type": "expect_column_values_to_be_in_type_list",
       "kwargs": {
-        "column": "Volume",
+        "column": "close",
         "type_list": [
           "BIGINT",
           "BYTEINT",
@@ -570,8 +440,8 @@
     {
       "expectation_type": "expect_column_values_to_be_between",
       "kwargs": {
-        "column": "Volume",
-        "max_value": 313645800,
+        "column": "close",
+        "max_value": 539.52001953125,
         "min_value": 0
       },
       "meta": {}
@@ -579,24 +449,105 @@
     {
       "expectation_type": "expect_column_to_exist",
       "kwargs": {
-        "column": "Symbol"
+        "column": "volume"
       },
       "meta": {}
     },
     {
       "expectation_type": "expect_column_values_to_not_be_null",
       "kwargs": {
-        "column": "Symbol"
+        "column": "volume"
       },
       "meta": {}
     },
     {
-      "expectation_type": "expect_column_values_to_be_in_set",
+      "expectation_type": "expect_column_values_to_be_in_type_list",
       "kwargs": {
-        "column": "Symbol",
-        "value_set": [
-          "MSFT"
+        "column": "volume",
+        "type_list": [
+          "BIGINT",
+          "BYTEINT",
+          "ByteType()",
+          "INT",
+          "INT64",
+          "INTEGER",
+          "Int16Dtype",
+          "Int32Dtype",
+          "Int64Dtype",
+          "Int8Dtype",
+          "IntegerType",
+          "IntegerType()",
+          "LongType",
+          "LongType()",
+          "SMALLINT",
+          "ShortType()",
+          "TINYINT",
+          "UInt16Dtype",
+          "UInt32Dtype",
+          "UInt64Dtype",
+          "UInt8Dtype",
+          "int",
+          "int16",
+          "int32",
+          "int64",
+          "int8",
+          "int_",
+          "integer",
+          "uint16",
+          "uint32",
+          "uint64",
+          "uint8",
+          "Uint8",
+          "Uint16",
+          "Uint32",
+          "Uint64",
+          "Uint128",
+          "Uint256",
+          "Int8",
+          "Int16",
+          "Int32",
+          "Int64",
+          "Int128",
+          "Int256",
+          "DECIMAL",
+          "DOUBLE",
+          "DOUBLE_PRECISION",
+          "DecimalType()",
+          "DoubleType",
+          "DoubleType()",
+          "FLOAT",
+          "FLOAT4",
+          "FLOAT64",
+          "FLOAT8",
+          "FloatType",
+          "FloatType()",
+          "NUMERIC",
+          "REAL",
+          "float",
+          "float16",
+          "float32",
+          "float64",
+          "float_",
+          "number",
+          "Float32",
+          "Float64"
         ]
+      },
+      "meta": {
+        "notes": {
+          "content": [
+            "The column values should be stored in one of these types."
+          ],
+          "format": "markdown"
+        }
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_between",
+      "kwargs": {
+        "column": "volume",
+        "max_value": 7421640800,
+        "min_value": 0
       },
       "meta": {}
     }

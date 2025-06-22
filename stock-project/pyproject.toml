@@ -23,7 +23,9 @@ dependencies = [
     "ydata-profiling (>=4.16.1,<5.0.0)",
     "pandas_ta (==0.3.14b0)",
     "scikit-learn (>=1.7.0,<2.0.0)",
-    "numpy (>=1.24, <2.2)"
+    "numpy (>=1.24, <2.2)",
+    "hopsworks (==4.2.6)",
+    "confluent-kafka (==2.10.1)"
 ]
 
 [project.scripts]

@@ -103,6 +103,18 @@ fluent_datasources:
       stock_asset:
         type: dataframe
         batch_metadata: {}
+  numerical_features:
+    type: pandas
+    assets:
+      numerical_features_asset:
+        type: dataframe
+        batch_metadata: {}
+  categorical_features:
+    type: pandas
+    assets:
+      categorical_features_asset:
+        type: dataframe
+        batch_metadata: {}
 notebooks:
 include_rendered_content:
   globally: false

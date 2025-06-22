@@ -15,6 +15,8 @@ from kedro.io.core import DatasetError
 from kedro.config import OmegaConfigLoader
 from kedro.framework.project import settings
 
+import mlflow
+
 # Expectations
 import great_expectations as gx
 from great_expectations.core import ExpectationSuite, ExpectationConfiguration
@@ -133,7 +135,7 @@ def to_feature_store(
         version=feature_group_version,
         description= description,
         primary_key=["date"],
-        event_time="datetime",
+        event_time="date",
         online_enabled=False,
         expectation_suite=validation_expectation_suite,
     )
@@ -169,7 +171,7 @@ def collect_yf_data(
     symbols: List[str],
     user_start_date: str,
     last_ingestion_date=None,
-    to_feature_store=False
+    is_to_feature_store=False
 ) -> tuple[pd.DataFrame, str]:
     """
     Ingests yfinance data starting from max(user_start_date, last_ingestion_date)
@@ -199,6 +201,11 @@ def collect_yf_data(
         except DatasetError:
             last_data_ingested = None
 
+    with mlflow.start_run(run_name="data_ingestion_yfinance"):
+        mlflow.log_param("symbols", symbols)
+        mlflow.log_param("effective_start", str(effective_start))
+        mlflow.log_param("last_ingestion_date", last_ingestion_date)
+
     # Catch all
     concatenate = False
     if isinstance(last_data_ingested, pd.DataFrame):
@@ -215,13 +222,23 @@ def collect_yf_data(
 
         effective_start = effective_start + timedelta(days=1)
 
-    if effective_start >= date.today():
-        data = last_data_ingested
-        latest_available_date = last_ingestion_date
-        logger.info(f"Dataset currently contains {len(data.columns)} columns.")
-        print("Dataset already up to date. Skipping download")
+    def last_business_day(ref_date: date) -> date:
+        # Get last 5 business days up to ref_date
+        bdays = pd.bdate_range(end=ref_date, periods=1)
+        return bdays[-1].date()
 
+    if effective_start >= last_business_day(date.today()):
+        # no need to download
+        logger.info(f"No data returned starting from {effective_start}")
+        
+        return last_data_ingested, last_ingestion_date
+        
     else:
+        is_data_available = True
+
+        logger.info("Starting data ingestion for symbols: {symbols}")
+        logger.info("Downloading data from yfinance starting from {effective_start}")
+
         # Ingestion
         data = yf.download(
             tickers=symbols,
@@ -230,9 +247,9 @@ def collect_yf_data(
             auto_adjust=False,
             progress=False
         )
-    
-        if data.empty:
-            raise ValueError(f"No data returned for tickers {symbols} starting from {effective_start}")
+
+        mlflow.log_metric("num_new_records", len(data))
+        logger.info("Finished downloading data. Number of records: {len(data)}")
 
         # Reformat into long format with ticker column
         data = (
@@ -242,6 +259,8 @@ def collect_yf_data(
             .reset_index()
             .rename(columns=str.lower)
         )
+
+        logger.info("Reformatted data to long format. Shape: {data.shape}")
 
         # Select only ohlcv
         data = data[['date', 'symbol', 'open', 'high', 'low', 'close', 'volume']]
@@ -260,41 +279,66 @@ def collect_yf_data(
 
     logger.info(f"Dataset currently contains {len(data.columns)} columns.")
 
-    ### --------------------------------- SETTING EXPECTATIONS ---------------------------------###
-    # Getting the features
-    numerical_features = data.select_dtypes(exclude=['object','string','category']).columns.tolist()
-    numerical_features.remove('date')
-    categorical_features = data.select_dtypes(include=['object','string','category']).columns.tolist()
-    
-    # Building expectations suites
-    validation_expectation_suite_numerical = build_expectation_suite("numerical_expectations","numerical_features")
-    validation_expectation_suite_categorical = build_expectation_suite("categorical_expectations","categorical_features")
-    
-    # Setting the feature store
-    data_numeric = data.drop(
-        columns=categorical_features
+    if is_data_available:
+        ### --------------------------------- SETTING EXPECTATIONS ---------------------------------###
+        # Getting the features
+        numerical_features = data.select_dtypes(exclude=['object','string','category']).columns.tolist()
+        numerical_features.remove('date')
+        categorical_features = data.select_dtypes(include=['object','string','category']).columns.tolist()
+        
+        # Setting the feature store
+        data_numeric = data.drop(
+            columns=categorical_features
         )
-    data_categorical = data.drop(
-        columns=numerical_features
-        )
-    
-    numerical_feature_descriptions =[]
-    categorical_feature_descriptions =[]
-
-    if to_feature_store:
-        object_fs_numerical_features = to_feature_store(
-            data_numeric,"numerical_features",
-            1,"Numerical Features",
-            numerical_feature_descriptions,
-            validation_expectation_suite_numerical,
-            credentials["feature_store"]
+        data_categorical = data.drop(
+            columns=numerical_features
         )
 
-        object_fs_categorical_features = to_feature_store(
-            data_categorical,"categorical_features",
-            1,"Categorical Features",
-            categorical_feature_descriptions,
-            validation_expectation_suite_categorical,
-            credentials["feature_store"]
+        # Building expectations suites
+        validation_expectation_suite_numerical = build_expectation_suite(
+            df=data_numeric
+            ,suite_name="numerical_expectations"
+            ,datasource_name="numerical_features"
+            ,data_asset_name="numerical_features_asset"
         )
+        validation_expectation_suite_categorical = build_expectation_suite(
+            df=data_categorical
+            ,suite_name="categorical_expectations"
+            ,datasource_name="categorical_features"
+            ,data_asset_name="categorical_features_asset"
+        )
+
+        context_root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../gx"))
+        mlflow.log_artifacts(context_root_dir, artifact_path="great_expectations")
+        
+        numerical_feature_descriptions =[]
+        categorical_feature_descriptions =[]
+
+        if is_to_feature_store:
+            logger.info("Uploading numerical features to feature store...")
+
+            object_fs_numerical_features = to_feature_store(
+                data_numeric,"numerical_features",
+                1,"Numerical Features",
+                numerical_feature_descriptions,
+                validation_expectation_suite_numerical,
+                credentials["feature_store"]
+            )
+
+            logger.info("Numerical features upload complete.")
+
+            logger.info("Uploading categorical features to feature store...")
+
+            object_fs_categorical_features = to_feature_store(
+                data_categorical,"categorical_features",
+                1,"Categorical Features",
+                categorical_feature_descriptions,
+                validation_expectation_suite_categorical,
+                credentials["feature_store"]
+            )
+
+            logger.info("Categorical features upload complete.")
+
+    logger.info("Data ingestion complete. Returning dataset and latest available date.")
+
     return data, latest_available_date
