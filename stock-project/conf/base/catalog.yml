@@ -44,6 +44,8 @@ X_train:
   load_args:
     parse_dates:
       - date
+  save_args:
+    index: True
 
 X_test:
   type: kedro_datasets.pandas.CSVDataset
@@ -51,6 +53,8 @@ X_test:
   load_args:
     parse_dates:
       - date
+  save_args:
+    index: True
       
 y_train:
   type: kedro_datasets.pandas.CSVDataset
@@ -58,6 +62,8 @@ y_train:
   load_args:
     parse_dates:
       - date
+  save_args:
+    index: True
       
 y_test:
   type: kedro_datasets.pandas.CSVDataset
@@ -65,3 +71,9 @@ y_test:
   load_args:
     parse_dates:
       - date
+  save_args:
+    index: True
+
+model_assessment_results:
+  type: kedro_datasets.pandas.CSVDataset
+  filepath: data/04_model_assessment/model_assessment_results.csv

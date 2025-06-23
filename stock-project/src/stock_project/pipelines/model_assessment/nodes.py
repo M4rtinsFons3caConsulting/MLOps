@@ -46,12 +46,13 @@ from sklearn.metrics import (
 
 from sklearn.feature_selection import f_classif
 
-from .purged_kfold import PurgedKFold
-from .feature_selection import KBestRFESelector
-from .scaler import FeatureScaler
+from .classes.PurgedKFold import PurgedKFold
+from .classes.FeatureSelector import KBestRFESelector
+from .classes.DynamicScaler import FeatureScaler
 
 import optuna
 from optuna.integration import OptunaSearchCV
+from optuna.distributions import IntDistribution, FloatDistribution
 
 import logging
 import mlflow
@@ -76,7 +77,7 @@ MODEL_CLASS_MAPPING = {
 
 def build_pipeline(model_name: str, model_init_params: Dict[str, Any]) -> Pipeline:
     """
-    🔧 Build sklearn pipeline with feature selection, scaling, and the specified model initialized.
+    Build sklearn pipeline with feature selection, scaling, and the specified model initialized.
 
     Args:
         model_name (str): Model class name string.
@@ -111,7 +112,7 @@ def run_optuna_search(
     **kwargs,
 ) -> Tuple[Pipeline, Dict[str, Any], float]:
     """
-    🎯 Run OptunaSearchCV to tune hyperparameters on a pipeline built for given model.
+    Run OptunaSearchCV to tune hyperparameters on a pipeline built for given model.
 
     Args:
         model_name (str): Model class name string.
@@ -133,6 +134,15 @@ def run_optuna_search(
     random_state = kwargs.get("random_state")
     verbose = kwargs.get("verbose")
     n_jobs = kwargs.get("n_jobs")
+
+    # Convert numeric range lists to Optuna distributions
+    for param, val in hyperparam_space.items():
+        if isinstance(val, list) and len(val) == 2:
+            low, high = val
+            if all(isinstance(v, int) for v in val):
+                hyperparam_space[param] = IntDistribution(low=low, high=high)
+            elif all(isinstance(v, float) for v in val):
+                hyperparam_space[param] = FloatDistribution(low=low, high=high, log=True)
 
     search = OptunaSearchCV(
         pipeline,
@@ -158,10 +168,10 @@ def find_champion_model(
     n_trials: int,
     scoring_metric: str,
     cv_args: Dict[str, Any],
-    **kwargs,
+    kwargs,
 ) -> Dict[str, Dict[str, Any]]:
     """
-    🚀 Run Optuna-based optimization for all models passed via parameters dicts.
+    Run Optuna-based optimization for all models passed via parameters dicts.
 
     Args:
         X (pd.DataFrame): Feature matrix.
@@ -171,11 +181,14 @@ def find_champion_model(
         n_trials (int): Number of trials per model.
         scoring_metric (str): Scoring metric key.
         cv_args (dict): Arguments for PurgedKFold, unpacked.
-        **kwargs: Additional keyword arguments (expects "random_state").
+        kwargs: Additional keyword arguments (expects "random_state").
 
     Returns:
         dict: Mapping model names to dicts containing 'estimator', 'params', 'score'.
     """
+    X.set_index('date', inplace=True)
+    y.set_index('date', inplace=True)
+
     results = {}
 
     for model_name in model_init_params_dict.keys():
@@ -205,4 +218,5 @@ def find_champion_model(
         }
 
     logger.info("✅ All model optimizations completed.")
+    
     return results

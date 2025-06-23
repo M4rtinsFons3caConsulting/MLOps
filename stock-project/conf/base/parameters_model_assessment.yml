@@ -12,8 +12,8 @@ kwargs:
 n_trials: 50
 
 cv_args:
-  cv_n_splits: 5
-  cv_purging_days: 1
+  n_splits: 5
+  purging_window: 1
 
 scoring_metric: "f1_score"
 

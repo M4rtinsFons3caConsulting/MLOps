@@ -5,7 +5,7 @@ from sklearn.model_selection import KFold
 from datetime import timedelta
 
 class PurgedKFold:
-    def __init__(self, n_splits=5, purging_window=timedelta(days=1), embargo_window=timedelta(0)):
+    def __init__(self, n_splits=5, purging_window=1, embargo_window=0):
         """
         Purged KFold cross-validator that purges training samples within a time window
         around the validation fold.
@@ -16,8 +16,12 @@ class PurgedKFold:
             embargo_window (timedelta): Additional embargo time after validation fold (optional).
         """
         self.n_splits = n_splits
-        self.purging_window = purging_window
-        self.embargo_window = embargo_window
+        self.purging_window = timedelta(days=purging_window)
+        self.embargo_window = timedelta(embargo_window)
+
+    def get_n_splits(self, X=None, y=None, groups=None):
+        """Return the number of splits"""
+        return self.n_splits
 
     def split(self, X, y=None, groups=None):
         """
