@@ -5,4 +5,3 @@
 # Link: https://docs.kedro.org/en/0.19.14/configuration/parameters.html
 
 test_size: 0.2
-random_state: 20

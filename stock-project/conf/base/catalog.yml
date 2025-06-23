@@ -23,13 +23,9 @@ last_ingestion_date:
   type: pickle.PickleDataset
   filepath: data/00_metadata/last_ingestion_date.pkl
 
-ingestion_interation_count:
-  type: pickle.PickleDataset
-  filepath: data/00_metadata/ingestion_interation_count.pkl
-  
-preprocessing_interation_count:
-  type: pickle.PickleDataset
-  filepath: data/00_metadata/preprocessing_interation_count.pkl
+feature_store_versions:
+  type: kedro_datasets.json.JSONDataset
+  filepath: data/00_metadata/feature_store_versions.json
 
 reporting_tests:
   type: kedro_datasets.pandas.CSVDataset
@@ -37,21 +33,35 @@ reporting_tests:
 
 preprocessed_data:
   type: kedro_datasets.pandas.CSVDataset
-  filepath: data/03_primary/stock_preprocessed.csv
+  filepath: data/02_intermediate/stock_preprocessed.csv
   load_args:
     parse_dates:
       - date
 
-stock_train:
+X_train:
   type: kedro_datasets.pandas.CSVDataset
-  filepath: data/03_primary/stock_train.csv
+  filepath: data/03_primary/X_train.csv
   load_args:
     parse_dates:
       - date
 
-stock_test:
+X_test:
   type: kedro_datasets.pandas.CSVDataset
-  filepath: data/03_primary/stock_test.csv
+  filepath: data/03_primary/X_test.csv
+  load_args:
+    parse_dates:
+      - date
+      
+y_train:
+  type: kedro_datasets.pandas.CSVDataset
+  filepath: data/03_primary/y_train.csv
+  load_args:
+    parse_dates:
+      - date
+      
+y_test:
+  type: kedro_datasets.pandas.CSVDataset
+  filepath: data/03_primary/y_test.csv
   load_args:
     parse_dates:
       - date

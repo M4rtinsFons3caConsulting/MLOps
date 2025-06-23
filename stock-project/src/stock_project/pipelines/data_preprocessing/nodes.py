@@ -163,11 +163,11 @@ def perform_feature_engineering(
     with KedroSession.create(project_path=project_path) as session:
         catalog = session.load_context().catalog
                 
-        # Try to load the iteration counter
+        # Try to load the feature store versioning
         try:
-            preprocessing_interation_count = catalog.load("preprocessing_interation_count") + 1
+            versions = catalog.load("feature_store_versions")
         except DatasetError:
-            preprocessing_interation_count = 1
+            versions = {}
 
     with mlflow.start_run(run_name="add_technical_indicators", nested=True):
         start_time = time.time()
@@ -183,11 +183,23 @@ def perform_feature_engineering(
         mlflow.log_metric("processing_time_seconds", time.time() - start_time)
 
         if is_to_feature_store:
+            logger.info("Retrieving feature store versions...")
+
+            # Initialize versions if missing
+            if "numerical_features" not in versions:
+                versions["numerical_features"] = 1
+                
+            logger.info("Feature store versions retrieved.")
+
             # Setting the feature store
             categorical_features = result.select_dtypes(include=['object','string','category']).columns.tolist()
             data_numeric = result.drop(
                 columns=categorical_features
             )
+            data_numeric.reset_index(drop=False, inplace=True)
+
+            # Replace invalid hopsworks characters
+            data_numeric.columns = [col.replace('.', '_') for col in data_numeric.columns]
 
             # Initialize GE context (adjust path as needed)
             context_root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../gx"))
@@ -207,22 +219,18 @@ def perform_feature_engineering(
             object_fs_numerical_features = to_feature_store(
                 data_numeric
                 ,"numerical_features"
-                ,preprocessing_interation_count
+                ,versions["numerical_features"]
                 ,"Numerical Features"
                 ,numerical_feature_descriptions
                 ,validation_expectation_suite_numerical
                 ,credentials["feature_store"]
             )
-
-            object_fs_numerical_features.insert(
-                features=data_numeric,
-                write_options={"schema_evolution": True},
-                mode="overwrite"
-            )
+            # Update feature store version
+            versions["numerical_features"] += 1
 
             logger.info("Numerical features upload complete.")
 
-    return result, preprocessing_interation_count
+    return result, versions
 
 
 def create_target(
@@ -242,6 +250,18 @@ def create_target(
     Returns:
         DataFrame with ['date', 'label'] columns for QQQ only.
     """
+    project_path = Path(__file__).resolve().parents[4]
+
+    # Inject previous context
+    with KedroSession.create(project_path=project_path) as session:
+        catalog = session.load_context().catalog
+
+        # Try to load the feature store versioning
+        try:
+            versions = catalog.load("feature_store_versions")
+        except DatasetError:
+            versions = {}
+
     with mlflow.start_run(run_name="create_target", nested=True):
         mlflow.log_param("prediction_horizon", prediction_horizon)
         mlflow.log_param("threshold", threshold)
@@ -286,6 +306,14 @@ def create_target(
         mlflow.log_artifacts(context_root_dir, artifact_path="great_expectations")
 
         if is_to_feature_store:
+            logger.info("Retrieving feature store versions...")
+
+            # Initialize versions if missing
+            if "target_feature" not in versions:
+                versions["target_feature"] = 1
+                
+            logger.info("Feature store versions retrieved.")
+
             target_feature = ['label']
             target_feature_description = []
             logger.info("Uploading target feature to feature store...")
@@ -293,16 +321,18 @@ def create_target(
             object_fs_target_feature = to_feature_store(
                 data_label
                 ,"target_feature"
-                ,1
+                ,versions["target_feature"]
                 ,"Target Feature"
                 ,target_feature_description
                 ,validation_expectation_suite_label
                 ,credentials["feature_store"]
             )
+            # Update feature store version
+            versions["target_feature"] += 1
 
             logger.info("Target feature upload complete.")
 
-    return data_label
+    return data_label, versions
 
 
 def widden_df(
@@ -349,7 +379,7 @@ def widden_df(
 
 def prepare_model_input(
     data: pd.DataFrame
-    ,labels: pd.DataFrame
+    ,is_to_feature_store: bool = False
 ) -> pd.DataFrame:
     """
     Join engineered features with QQQ binary labels on date.
@@ -361,11 +391,29 @@ def prepare_model_input(
     Returns:
         DataFrame.
     """
+    raw_data = data.copy()
+
+    engineered_data, versions_engineering = perform_feature_engineering(
+        data=raw_data
+        ,is_to_feature_store=is_to_feature_store
+    )
+    data_labels, versions_target = create_target(
+        data=raw_data
+        ,is_to_feature_store=is_to_feature_store
+    )
+    data_wide = widden_df(engineered_data)
+
+    # Get final feature stores versions
+    versions = {
+        key: max(versions_engineering.get(key, 0), versions_target.get(key, 0))
+        for key in set(versions_engineering) | set(versions_target)
+    }
+
     logger.info("Starting to prepare model input by merging features and labels.")
 
     with mlflow.start_run(run_name="prepare_model_input", nested=True):
         # Merge features and label on date
-        merged = pd.merge(data, labels, on='date', how='inner')
+        merged = pd.merge(data_wide, data_labels, on='date', how='inner')
         logger.info(f"Merged data shape: {merged.shape}")
 
         # Drop rows with missing label
@@ -373,4 +421,4 @@ def prepare_model_input(
         logger.info(f"Data shape after dropping missing labels: {model_data.shape}")
 
     logger.info("Finished preparing model input.")
-    return model_data
+    return model_data, versions

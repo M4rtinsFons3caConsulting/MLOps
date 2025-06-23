@@ -11,8 +11,16 @@ def create_pipeline(**kwargs) -> Pipeline:
     return pipeline([
         node(
             func=split_data
-            ,inputs=["preprocessed_data", "params:test_size", "params:random_state"]
-            ,outputs=["stock_train", "stock_test"]
+            ,inputs=[
+                "preprocessed_data"
+                ,"params:test_size"
+            ]
+            ,outputs=[
+                "X_train"
+                ,"X_test"
+                ,"y_train"
+                ,"y_test"
+            ]
             ,name="data_splitting_node"
         )
     ])

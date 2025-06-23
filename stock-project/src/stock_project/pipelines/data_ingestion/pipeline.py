@@ -34,7 +34,7 @@ def create_pipeline(**kwargs) -> Pipeline:
             ,outputs=[
                 "raw_data"
                 ,"last_ingestion_date"
-                ,"ingestion_interation_count"
+                ,"feature_store_versions"
             ]
             ,name="collect_data_node"
         )

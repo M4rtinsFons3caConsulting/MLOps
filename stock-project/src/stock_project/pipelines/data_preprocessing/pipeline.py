@@ -10,39 +10,15 @@ from .nodes import perform_feature_engineering, create_target, widden_df, prepar
 def create_pipeline(**kwargs) -> Pipeline:
     return pipeline([
         node(
-            func=perform_feature_engineering
+            func=prepare_model_input
             ,inputs=[
                 "raw_data"
                 ,"params:is_to_feature_store"
             ]
             ,outputs=[
-                "engineered_data"
-                ,"preprocessing_interation_count"
+                "preprocessed_data"
+                ,"feature_store_versions"
             ]
-            ,name="data_engineering_node"
+            ,name="prepare_model_input_node"
         )
-        # , node(
-        #     func=create_target
-        #     ,inputs=[
-        #         "raw_data"
-        #         ,"params:prediction_horizon"
-        #         ,"params:threshold"
-        #         ,"params:is_to_feature_store"
-        #     ]
-        #     ,outputs="labels"
-        #     ,name="create_target_node"
-        # ), node(
-        #     func=widden_df
-        #     ,inputs="engineered_data"
-        #     ,outputs="widden_data"
-        #     ,name="widden_df_node"
-        # ), node(
-        #     func=prepare_model_input
-        #     ,inputs=[
-        #         "widden_data"
-        #         ,"labels"
-        #     ]
-        #     ,outputs="preprocessed_data"
-        #     ,name="prepare_model_input_node"
-        # )
     ])
