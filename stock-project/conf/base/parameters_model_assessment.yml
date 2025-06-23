@@ -26,16 +26,45 @@ parameters:
     eval_metric: "logloss"
 
 hyperparameters: 
-  LogisticRegression: 
-    feature_selection__k: [5, 20]
-    model__C: [0.01, 10.0]
+  LogisticRegression:
+    feature_selection__k:
+      distribution: int
+      low: 5
+      high: 20
+    model__C:
+      distribution: float
+      low: 0.01
+      high: 10.0
+      log: true
   RandomForestClassifier:
-    feature_selection__k: [5, 20]
-    model__n_estimators: [50, 200]
-    model__max_depth: [3, 10]
-  XGBClassifier: 
-    feature_selection__k: [5, 20]
-    model__n_estimators: [50, 200]
-    model__max_depth: [3, 10]
-    model__learning_rate: [0.01, 0.3]
+    feature_selection__k:
+      distribution: int
+      low: 5
+      high: 20
+    model__n_estimators:
+      distribution: int
+      low: 50
+      high: 200
+    model__max_depth:
+      distribution: int
+      low: 3
+      high: 10
+  XGBClassifier:
+    feature_selection__k:
+      distribution: int
+      low: 5
+      high: 20
+    model__n_estimators:
+      distribution: int
+      low: 50
+      high: 200
+    model__max_depth:
+      distribution: int
+      low: 3
+      high: 10
+    model__learning_rate:
+      distribution: float
+      low: 0.01
+      high: 0.3
+      log: false
 

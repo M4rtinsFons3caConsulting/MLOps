@@ -74,6 +74,11 @@ MODEL_CLASS_MAPPING = {
     "XGBClassifier": XGBClassifier,
 }
 
+OPTUNA_DISTRIBUTION_MAPPING = {
+    "int": IntDistribution
+    ,"float": FloatDistribution
+}
+
 
 def build_pipeline(model_name: str, model_init_params: Dict[str, Any]) -> Pipeline:
     """
@@ -136,13 +141,14 @@ def run_optuna_search(
     n_jobs = kwargs.get("n_jobs")
 
     # Convert numeric range lists to Optuna distributions
-    for param, val in hyperparam_space.items():
-        if isinstance(val, list) and len(val) == 2:
-            low, high = val
-            if all(isinstance(v, int) for v in val):
-                hyperparam_space[param] = IntDistribution(low=low, high=high)
-            elif all(isinstance(v, float) for v in val):
-                hyperparam_space[param] = FloatDistribution(low=low, high=high, log=True)
+    hyperparam_space = {
+        param: OPTUNA_DISTRIBUTION_MAPPING[config["distribution"]](
+            low=config["low"],
+            high=config["high"],
+            log=config.get("log", False)
+        )
+        for param, config in hyperparam_space.items()
+    }
 
     search = OptunaSearchCV(
         pipeline,
