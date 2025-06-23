@@ -377,6 +377,18 @@ def widden_df(
     return data_wide
 
 
+def handle_missing_values(
+    data: pd.DataFrame
+) -> pd.DataFrame:
+    # Drop features with more than 30% missing values
+    missing_ratio = data.isna().mean()
+    cols_to_drop = missing_ratio[missing_ratio > 0.3].index
+
+    data.drop(columns=cols_to_drop, inplace=True)
+
+    return data
+
+
 def prepare_model_input(
     data: pd.DataFrame
     ,is_to_feature_store: bool = False
@@ -403,6 +415,8 @@ def prepare_model_input(
     )
     data_wide = widden_df(engineered_data)
 
+    data_final = handle_missing_values(data_wide)
+
     # Get final feature stores versions
     versions = {
         key: max(versions_engineering.get(key, 0), versions_target.get(key, 0))
@@ -413,7 +427,7 @@ def prepare_model_input(
 
     with mlflow.start_run(run_name="prepare_model_input", nested=True):
         # Merge features and label on date
-        merged = pd.merge(data_wide, data_labels, on='date', how='inner')
+        merged = pd.merge(data_final, data_labels, on='date', how='inner')
         logger.info(f"Merged data shape: {merged.shape}")
 
         # Drop rows with missing label
