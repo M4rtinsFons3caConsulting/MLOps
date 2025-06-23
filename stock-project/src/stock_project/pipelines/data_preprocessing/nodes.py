@@ -421,4 +421,5 @@ def prepare_model_input(
         logger.info(f"Data shape after dropping missing labels: {model_data.shape}")
 
     logger.info("Finished preparing model input.")
+    
     return model_data, versions
