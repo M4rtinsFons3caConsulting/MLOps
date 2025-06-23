@@ -16,6 +16,8 @@ np.NaN = np.nan
 import pandas_ta as ta
 
 # Pipeline
+from kedro.framework.session import KedroSession
+from kedro.io.core import DatasetError
 from kedro.config import OmegaConfigLoader
 from kedro.framework.project import settings
 
@@ -155,6 +157,17 @@ def perform_feature_engineering(
     ,is_to_feature_store: bool = False
 ) -> pd.DataFrame:
     data = data.copy()
+    project_path = Path(__file__).resolve().parents[4]
+
+    # Inject previous context
+    with KedroSession.create(project_path=project_path) as session:
+        catalog = session.load_context().catalog
+                
+        # Try to load the iteration counter
+        try:
+            preprocessing_interation_count = catalog.load("preprocessing_interation_count") + 1
+        except DatasetError:
+            preprocessing_interation_count = 1
 
     with mlflow.start_run(run_name="add_technical_indicators", nested=True):
         start_time = time.time()
@@ -194,7 +207,7 @@ def perform_feature_engineering(
             object_fs_numerical_features = to_feature_store(
                 data_numeric
                 ,"numerical_features"
-                ,2
+                ,preprocessing_interation_count
                 ,"Numerical Features"
                 ,numerical_feature_descriptions
                 ,validation_expectation_suite_numerical
@@ -209,7 +222,7 @@ def perform_feature_engineering(
 
             logger.info("Numerical features upload complete.")
 
-    return result
+    return result, preprocessing_interation_count
 
 
 def create_target(

@@ -23,6 +23,14 @@ last_ingestion_date:
   type: pickle.PickleDataset
   filepath: data/00_metadata/last_ingestion_date.pkl
 
+ingestion_interation_count:
+  type: pickle.PickleDataset
+  filepath: data/00_metadata/ingestion_interation_count.pkl
+  
+preprocessing_interation_count:
+  type: pickle.PickleDataset
+  filepath: data/00_metadata/preprocessing_interation_count.pkl
+
 reporting_tests:
   type: kedro_datasets.pandas.CSVDataset
   filepath: data/08_reporting/data_tests.csv

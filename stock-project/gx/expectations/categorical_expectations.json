@@ -45,9 +45,9 @@
       "kwargs": {
         "column": "symbol",
         "value_set": [
-          "QQQ",
           "MSFT",
-          "AAPL"
+          "AAPL",
+          "QQQ"
         ]
       },
       "meta": {}

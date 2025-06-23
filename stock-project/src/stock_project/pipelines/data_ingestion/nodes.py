@@ -202,10 +202,16 @@ def collect_yf_data(
         except DatasetError:
             last_data_ingested = None
 
-    with mlflow.start_run(run_name="data_ingestion_yfinance"):
+        # Try to load the iteration counter
+        try:
+            ingestion_interation_count = catalog.load("ingestion_interation_count") + 1
+        except DatasetError:
+            ingestion_interation_count = 1
+
+    with mlflow.start_run(run_name="data_ingestion_yfinance", nested=True):
         mlflow.log_param("symbols", symbols)
-        mlflow.log_param("effective_start", str(effective_start))
         mlflow.log_param("last_ingestion_date", last_ingestion_date)
+        mlflow.log_param("ingestion_interation_count", ingestion_interation_count)
 
         # Catch all
         concatenate = False
@@ -222,7 +228,8 @@ def collect_yf_data(
             )
 
             effective_start = effective_start + timedelta(days=1)
-
+        mlflow.log_param("effective_start", str(effective_start))
+        
         def last_business_day(ref_date: date) -> date:
             # Get last 5 business days up to ref_date
             bdays = pd.bdate_range(end=ref_date, periods=1)
@@ -318,7 +325,7 @@ def collect_yf_data(
             object_fs_numerical_features = to_feature_store(
                 data_numeric
                 ,"numerical_features"
-                ,1
+                ,ingestion_interation_count
                 ,"Numerical Features"
                 ,numerical_feature_descriptions
                 ,validation_expectation_suite_numerical
@@ -332,7 +339,7 @@ def collect_yf_data(
             object_fs_categorical_features = to_feature_store(
                 data_categorical
                 ,"categorical_features"
-                ,1
+                ,ingestion_interation_count
                 ,"Categorical Features"
                 ,categorical_feature_descriptions
                 ,validation_expectation_suite_categorical
@@ -342,5 +349,5 @@ def collect_yf_data(
             logger.info("Categorical features upload complete.")
 
         logger.info("Data ingestion complete. Returning dataset and latest available date.")
-
-        return data, latest_available_date
+        
+        return data, latest_available_date, ingestion_interation_count

@@ -15,7 +15,10 @@ def create_pipeline(**kwargs) -> Pipeline:
                 "raw_data"
                 ,"params:is_to_feature_store"
             ]
-            ,outputs="engineered_data"
+            ,outputs=[
+                "engineered_data"
+                ,"preprocessing_interation_count"
+            ]
             ,name="data_engineering_node"
         )
         # , node(
