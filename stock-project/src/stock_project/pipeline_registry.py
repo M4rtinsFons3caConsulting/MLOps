@@ -8,6 +8,8 @@ from stock_project.pipelines import (
     ,data_splitting as split
     ,model_assessment as assessment
     ,model_train as train
+    ,model_predict as predict
+    ,data_drift as drift
 )
 
 def register_pipelines() -> Dict[str, Pipeline]:
@@ -21,6 +23,8 @@ def register_pipelines() -> Dict[str, Pipeline]:
     splitting_pipeline = split.create_pipeline()
     assessment_pipeline = assessment.create_pipeline()
     train_pipeline = train.create_pipeline()
+    prediction_pipeline = predict.create_pipeline()
+    drift_pipeline = drift.create_pipeline()
 
     return {
         "ingestion": ingestion_pipeline
@@ -28,4 +32,6 @@ def register_pipelines() -> Dict[str, Pipeline]:
         ,"split": splitting_pipeline
         ,"assessment": assessment_pipeline
         ,"train": train_pipeline
+        ,"predict": prediction_pipeline
+        ,"drift": drift_pipeline
     }

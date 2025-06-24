@@ -195,9 +195,6 @@ def find_champion_model(
     Returns:
         dict: Mapping model names to dicts containing 'estimator', 'params', 'score'.
     """
-    X.set_index('date', inplace=True)
-    y.set_index('date', inplace=True)
-
     results = {}
 
     with open('conf/local/mlflow.yml') as f:

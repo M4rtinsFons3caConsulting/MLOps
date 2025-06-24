@@ -13,9 +13,7 @@ def create_pipeline(**kwargs) -> Pipeline:
             func=model_train
             ,inputs=[
                 "X_train"
-                ,"X_test"
                 ,"y_train"
-                ,"y_test"
                 ,"champion_model"
             ]
             ,outputs=[

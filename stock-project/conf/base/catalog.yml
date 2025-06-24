@@ -44,6 +44,7 @@ X_train:
   load_args:
     parse_dates:
       - date
+    index_col: date
   save_args:
     index: True
 
@@ -53,6 +54,7 @@ X_test:
   load_args:
     parse_dates:
       - date
+    index_col: date
   save_args:
     index: True
       
@@ -62,6 +64,7 @@ y_train:
   load_args:
     parse_dates:
       - date
+    index_col: date
   save_args:
     index: True
       
@@ -71,6 +74,7 @@ y_test:
   load_args:
     parse_dates:
       - date
+    index_col: date
   save_args:
     index: True
 
@@ -87,3 +91,17 @@ shap_plot:
   dataset:
     type: matplotlib.MatplotlibWriter
     filepath: data/06_reporting/shap_plot.png
+
+predictions:
+  type: kedro_datasets.pandas.CSVDataset
+  filepath: data/05_model_output/predictions.csv
+  load_args:
+    parse_dates:
+      - date
+    index_col: date
+  save_args:
+    index: True
+
+drift_results:
+  type: kedro_datasets.pandas.CSVDataset
+  filepath: data/06_reporting/drift_results.csv

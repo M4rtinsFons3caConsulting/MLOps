@@ -29,7 +29,9 @@ dependencies = [
     "xgboost (==3.0.2)",
     "optuna (>=4.4)",
     "optuna-integration (>=4.4)",
-    "shap (==0.48.0)"
+    "shap (==0.48.0)",
+    "nannyml (==0.13)",
+    "evidently (==0.3.0)"
 ]
 
 [project.scripts]

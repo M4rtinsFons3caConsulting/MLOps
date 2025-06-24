@@ -18,9 +18,7 @@ logger = logging.getLogger(__name__)
 
 def model_train(
     X_train: pd.DataFrame,
-    X_test: pd.DataFrame,
     y_train: pd.DataFrame,
-    y_test: pd.DataFrame,
     pipeline: pickle,
 ) -> Tuple[pickle, plt.Figure]:
     """
@@ -37,9 +35,7 @@ def model_train(
 
     Args:
         X_train (pd.DataFrame): Training feature matrix.
-        X_test (pd.DataFrame): Testing feature matrix.
         y_train (pd.DataFrame): Training target vector.
-        y_test (pd.DataFrame): Testing target vector.
         pipeline (pickle): A fitted scikit-learn pipeline that includes preprocessing and a final estimator.
 
     Returns:
@@ -50,34 +46,16 @@ def model_train(
         experiment_name = yaml.load(f, Loader=yaml.loader.SafeLoader)['tracking']['experiment']['name']
     experiment_id = mlflow.get_experiment_by_name(experiment_name).experiment_id
 
-    # Set indices
-    X_train.set_index('date', inplace=True)
-    X_test.set_index('date', inplace=True)
-    y_train.set_index('date', inplace=True)
-    y_test.set_index('date', inplace=True)
-
-    # Flatten target for sklearn compatibility
     y_train = np.ravel(y_train)
-    y_test = np.ravel(y_test)
 
     with mlflow.start_run(experiment_id=experiment_id, nested=True):
         # Train model
         pipeline.fit(X_train, y_train)
 
-        # Evaluate
-        y_train_pred = pipeline.predict(X_train)
-        y_test_pred = pipeline.predict(X_test)
-
-        acc_train = np.mean(y_train_pred == y_train)
-        acc_test = np.mean(y_test_pred == y_test)
-
-        mlflow.log_metric("accuracy_train", acc_train)
-        mlflow.log_metric("accuracy_test", acc_test)
-
         # Log model
         mlflow.sklearn.log_model(pipeline, artifact_path="trained_pipeline")
 
-        logger.info(f"✅ Model trained and logged. Test accuracy: {acc_test:.4f}")
+        logger.info("✅ Model trained and logged")
 
         # SHAP output
         shap_values = None
