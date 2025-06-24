@@ -78,4 +78,4 @@ def model_train(
         except Exception as e:
             logger.warning(f"SHAP skipped: {e}")
 
-    return pipeline, plt
+    return pipeline, fig
