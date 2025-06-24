@@ -1,5 +1,5 @@
 """
-This is a boilerplate pipeline 'model_assessment'
+This is a pipeline 'model_assessment'
 generated using Kedro 0.19.14
 """
 
@@ -21,7 +21,7 @@ def create_pipeline(**kwargs) -> Pipeline:
                 ,"params:cv_args"
                 ,"params:kwargs"
             ]
-            ,outputs="model_assessment_results"
+            ,outputs="champion_model"
             ,name="model_assessment_node"
         )
     ])

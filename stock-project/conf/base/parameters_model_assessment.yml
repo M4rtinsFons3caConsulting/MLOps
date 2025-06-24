@@ -20,7 +20,7 @@ scoring_metric: "f1_score"
 parameters:
   LogisticRegression:
     max_iter: 500
-  RandomForestClassifier:
+  RandomForestClassifier: {}
   XGBClassifier:
     use_label_encoder: False, 
     eval_metric: "logloss"

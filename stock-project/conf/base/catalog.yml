@@ -29,7 +29,7 @@ feature_store_versions:
 
 reporting_tests:
   type: kedro_datasets.pandas.CSVDataset
-  filepath: data/08_reporting/data_tests.csv
+  filepath: data/06_reporting/data_tests.csv
 
 preprocessed_data:
   type: kedro_datasets.pandas.CSVDataset
@@ -40,7 +40,7 @@ preprocessed_data:
 
 X_train:
   type: kedro_datasets.pandas.CSVDataset
-  filepath: data/03_primary/X_train.csv
+  filepath: data/03_model_input/X_train.csv
   load_args:
     parse_dates:
       - date
@@ -49,7 +49,7 @@ X_train:
 
 X_test:
   type: kedro_datasets.pandas.CSVDataset
-  filepath: data/03_primary/X_test.csv
+  filepath: data/03_model_input/X_test.csv
   load_args:
     parse_dates:
       - date
@@ -58,7 +58,7 @@ X_test:
       
 y_train:
   type: kedro_datasets.pandas.CSVDataset
-  filepath: data/03_primary/y_train.csv
+  filepath: data/03_model_input/y_train.csv
   load_args:
     parse_dates:
       - date
@@ -67,13 +67,23 @@ y_train:
       
 y_test:
   type: kedro_datasets.pandas.CSVDataset
-  filepath: data/03_primary/y_test.csv
+  filepath: data/03_model_input/y_test.csv
   load_args:
     parse_dates:
       - date
   save_args:
     index: True
 
-model_assessment_results:
-  type: kedro_datasets.pandas.CSVDataset
-  filepath: data/04_model_assessment/model_assessment_results.csv
+champion_model:
+  type: pickle.PickleDataset
+  filepath: data/04_models/champion_model.pkl
+
+production_model:
+  type: pickle.PickleDataset
+  filepath: data/04_models/production_model.pkl
+
+shap_plot:
+  type: kedro_mlflow.io.artifacts.MlflowArtifactDataset
+  dataset:
+    type: matplotlib.MatplotlibWriter
+    filepath: data/06_reporting/shap_plot.png

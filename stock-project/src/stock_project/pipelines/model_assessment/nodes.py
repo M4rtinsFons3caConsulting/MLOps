@@ -30,6 +30,9 @@ Dependencies:
 from datetime import timedelta
 from typing import Any, Dict, Tuple
 
+import yaml
+import numpy as np
+
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
@@ -197,32 +200,48 @@ def find_champion_model(
 
     results = {}
 
+    with open('conf/local/mlflow.yml') as f:
+        experiment_name = yaml.load(f, Loader=yaml.loader.SafeLoader)['tracking']['experiment']['name']
+        experiment_id = mlflow.get_experiment_by_name(experiment_name).experiment_id
+        logger.info(experiment_id)
+
     for model_name in model_init_params_dict.keys():
-        logger.info(f"🚀 Starting optimization for model: {model_name}")
+        with mlflow.start_run(experiment_id=experiment_id,nested=True):
 
-        best_estimator, best_params, best_score = run_optuna_search(
-            model_name,
-            X,
-            y,
-            model_init_params=model_init_params_dict[model_name],
-            hyperparam_space=hyperparam_spaces_dict[model_name],
-            n_trials=n_trials,
-            scoring_metric=scoring_metric,
-            cv_args=cv_args,
-            **kwargs,
-        )
+            logger.info(f"🚀 Starting optimization for model: {model_name}")
 
-        logger.info(f"🎯 Completed optimization for {model_name} | Best score: {best_score:.4f}")
-        mlflow.log_params({f"{model_name}_init_params": model_init_params_dict[model_name]})
-        mlflow.log_params({f"{model_name}_hyperparams": best_params})
-        mlflow.log_metric(f"{model_name}_best_score", best_score)
+            best_estimator, best_params, best_score = run_optuna_search(
+                model_name,
+                X,
+                np.ravel(y),
+                model_init_params=model_init_params_dict[model_name],
+                hyperparam_space=hyperparam_spaces_dict[model_name],
+                n_trials=n_trials,
+                scoring_metric=scoring_metric,
+                cv_args=cv_args,
+                **kwargs,
+            )
 
-        results[model_name] = {
-            "estimator": best_estimator,
-            "params": best_params,
-            "score": best_score,
-        }
+            logger.info(f"🎯 Completed optimization for {model_name} | Best score: {best_score:.4f}")
+            mlflow.log_params({f"{model_name}_init_params": model_init_params_dict[model_name]})
+            mlflow.log_params({f"{model_name}_hyperparams": best_params})
+            mlflow.log_metric(f"{model_name}_best_score", best_score)
+
+            results[model_name] = {
+                "estimator": best_estimator,
+                "params": best_params,
+                "score": best_score,
+            }
+
+            run_id = mlflow.last_active_run().info.run_id
+            logger.info(f"Logged model : {model_name} in run {run_id}")
 
     logger.info("✅ All model optimizations completed.")
-    
-    return results
+
+    # Get the best model by score
+    best_model_name = max(results, key=lambda name: results[name]["score"])
+    best_estimator = results[best_model_name]["estimator"]
+
+    logger.info(f"🏆 Best model: {best_model_name} with score {results[best_model_name]['score']:.4f}")
+
+    return best_estimator

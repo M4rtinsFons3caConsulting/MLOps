@@ -47,39 +47,23 @@ def apply_indicators_to_group(
     and long-term trends. The indicators cover trend, momentum, volatility, volume, and cycle analysis.
     
     Indicators included:
-    - SMA (Simple Moving Average): Average price over specified periods to identify trend direction.
     - EMA (Exponential Moving Average): Weighted moving average emphasizing recent prices.
-    - WMA (Weighted Moving Average): Moving average with linearly decreasing weights.
     - HMA (Hull Moving Average): Smoothed moving average reducing lag.
-    - VWMA (Volume Weighted Moving Average): Moving average weighted by volume.
     - MACD (Moving Average Convergence Divergence): Momentum trend indicator showing relationship between two EMAs.
-    - ADX (Average Directional Index): Measures trend strength regardless of direction.
-    - CCI (Commodity Channel Index): Identifies cyclical trends and overbought/oversold levels.
     - RSI (Relative Strength Index): Momentum oscillator identifying overbought/oversold conditions.
     - Stoch (Stochastic Oscillator): Momentum indicator comparing closing price to price range.
-    - Ichimoku: Comprehensive indicator showing support, resistance, and trend direction.
     - Supertrend: Trend following indicator based on ATR volatility.
-    - PSAR (Parabolic SAR): Indicates trend direction and potential reversal points.
     - MOM (Momentum): Measures rate of change in price.
     - ROC (Rate of Change): Percentage change over a period.
     - WILLIAMS %R: Momentum indicator showing overbought/oversold levels.
     - AO (Awesome Oscillator): Momentum indicator comparing 5 and 34 period moving averages.
     - KAMA (Kaufman Adaptive Moving Average): Moving average adapting to volatility.
-    - CG (Center of Gravity): Indicator showing cyclical price behavior.
     - BBANDS (Bollinger Bands): Volatility bands around a moving average.
     - ATR (Average True Range): Measures volatility.
-    - KC (Keltner Channels): Volatility based envelopes around an EMA.
     - Donchian Channels: Highest high and lowest low over a period, used for breakout signals.
-    - RVI (Relative Vigor Index): Measures strength of a trend by comparing closing and opening prices.
     - CMF (Chaikin Money Flow): Volume-weighted average of accumulation/distribution over a period.
     - MFI (Money Flow Index): Volume-based RSI measuring buying and selling pressure.
-    - EOM (Ease of Movement): Combines volume and price change to gauge ease of price movement.
-    - NVI (Negative Volume Index): Emphasizes price changes on days with lower volume.
-    - Fisher Transform: Converts price into a Gaussian normal distribution for turning points.
-    - Decay: Applies decay functions (linear and exponential) to smooth the data.
-    - Vortex: Identifies start of a new trend or continuation.
     - Z-Score: Standard score showing how far data is from mean.
-    - Entropy: Measures disorder or randomness in the data.
     - ADOSC (Chaikin A/D Oscillator): Momentum indicator using accumulation/distribution line.
     - UO (Ultimate Oscillator): Combines multiple time frame momentum oscillators.
     - OBV (On Balance Volume): Measures buying and selling pressure as cumulative volume.
@@ -118,10 +102,8 @@ def apply_indicators_to_group(
         data.ta.donchian(lower_length=10*p, upper_length=10*p, append=True)  # Breakout strategy
         data.ta.cmf(length=10*p, append=True)        # Volume flow
         data.ta.mfi(length=10*p, append=True)        # Money Flow Index
-        data.ta.obv(append=True)                     # OBV - daily resolution, longer trend volume view
         data.ta.adosc(fast=2*p, slow=4*p, append=True)  # A/D Oscillator
         data.ta.zscore(length=10*p, append=True)     # Detect outlier behavior weekly
-        data.ta.vwap(append=True)                    # VWAP - important for weekly levels
 
     for p1, p2 in zip([3, 5, 10], [9, 17, 34]):
         data.ta.adosc(fast=p1, slow=p2, append=True)  # Chaikin Accumulation/Distribution Oscillator
@@ -132,19 +114,10 @@ def apply_indicators_to_group(
 
     data.ta.vwap(append=True)    # Volume Weighted Average Price
 
-    # Drop all columns starting with 'SUPERT' but keep those starting with 'SUPERTd'
-    cols_to_drop = [col for col in data.columns if col.startswith('SUPERT') and not col.startswith('SUPERTd')]
-    data.drop(columns=cols_to_drop, inplace=True)
-    
-    # Fill NaNs in SUPERTd columns with 0
-    supertd_cols = [col for col in data.columns if col.startswith('SUPERTd')]
-    data[supertd_cols] = data[supertd_cols].fillna(0)
-
     logger.info(f"Finished creating new features for ticker {data['symbol'].iloc[0]}.")
     
     return data
 
-#TODO: find the first index, and the last index with nans, and clip the dataset accordingly
 
 def perform_feature_engineering(
     data: pd.DataFrame
@@ -371,6 +344,37 @@ def widden_df(
     return data_wide
 
 
+def handle_missing_values(
+    data: pd.DataFrame
+) -> pd.DataFrame:
+    """
+    Cleans the input DataFrame by handling missing values and removing unwanted columns.
+
+    Steps:
+    1. Drops all columns containing 'SUPERT' in their name, except those containing 'SUPERTd'.
+    2. Fills missing values in columns containing 'SUPERTd' with 0.
+    3. Drops all remaining rows with missing values.
+
+    Args:
+        data (pd.DataFrame): The input DataFrame containing technical indicators.
+
+    Returns:
+        pd.DataFrame: Cleaned DataFrame with reduced missing values and removed columns.
+    """
+    # Drop all columns starting with 'SUPERT' but keep those starting with 'SUPERTd'
+    cols_to_drop = [col for col in data.columns if 'SUPERT' in col and 'SUPERTd' not in col]
+    data.drop(columns=cols_to_drop, inplace=True)
+
+    # Fill NaNs in SUPERTd columns with 0
+    supertd_cols = [col for col in data.columns if 'SUPERTd' in col]
+    data[supertd_cols] = data[supertd_cols].fillna(0)
+
+    # All remaining missing values are at the beginning of the time series, so those are dropped
+    data.dropna(inplace=True)
+
+    return data
+
+
 def prepare_model_input(
     data: pd.DataFrame
     ,is_to_feature_store: bool = False
@@ -396,6 +400,7 @@ def prepare_model_input(
         ,is_to_feature_store=is_to_feature_store
     )
     data_wide = widden_df(engineered_data)
+    data_final = handle_missing_values(data_wide)
 
     # Get final feature stores versions
     versions = {
@@ -407,7 +412,7 @@ def prepare_model_input(
 
     with mlflow.start_run(run_name="prepare_model_input", nested=True):
         # Merge features and label on date
-        merged = pd.merge(data_wide, data_labels, on='date', how='inner')
+        merged = pd.merge(data_final, data_labels, on='date', how='inner')
         logger.info(f"Merged data shape: {merged.shape}")
 
         # Drop rows with missing label

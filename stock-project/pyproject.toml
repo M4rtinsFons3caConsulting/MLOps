@@ -28,7 +28,8 @@ dependencies = [
     "confluent-kafka (==2.10.1)",
     "xgboost (==3.0.2)",
     "optuna (>=4.4)",
-    "optuna-integration (>=4.4)"
+    "optuna-integration (>=4.4)",
+    "shap (==0.48.0)"
 ]
 
 [project.scripts]
