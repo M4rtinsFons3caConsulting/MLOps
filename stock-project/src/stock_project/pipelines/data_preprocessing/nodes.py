@@ -95,47 +95,33 @@ def apply_indicators_to_group(
     logger.info(f"Creating new features for ticker {data['symbol'].iloc[0]}...")    
 
     data = data.sort_values("date").copy()
-    data.index = range(len(data))
+    data.set_index('date', inplace=True)
     required_cols = ['open', 'high', 'low', 'close', 'volume']
     
     if not all(col in data.columns for col in required_cols):
         raise ValueError(f"Missing required OHLCV columns in: {data.columns}")
     
-    for p in [1, 2, 4]:
-        data.ta.sma(length=50*p, append=True)      # Simple Moving Average
-        data.ta.ema(length=25*p, append=True)      # Exponential Moving Average
-        data.ta.wma(length=25*p, append=True)      # Weighted Moving Average
-        data.ta.hma(length=25*p, append=True)      # Hull Moving Average
-        data.ta.vwma(length=25*p, append=True)     # Volume Weighted Moving Average
-        data.ta.macd(fast=12*p, slow=26*p, signal=9*p, append=True)  # MACD
-        data.ta.adx(length=14*p, append=True)      # Average Directional Index
-        data.ta.cci(length=10*p, append=True)      # Commodity Channel Index
-        data.ta.rsi(length=14*p, append=True)      # Relative Strength Index
-        data.ta.stoch(k=14*p, d=3*p, append=True)  # Stochastic Oscillator
-        data.ta.ichimoku(tenkan=9*p, kijun=26*p, senkou=52*p, append=True)  # Ichimoku Cloud
-        data.ta.supertrend(length=7 * p, multiplier=2 * p, append=True)    # Supertrend
-        data.ta.psar(step=0.02*p, max_step=0.2*p, append=True)             # Parabolic SAR
-        data.ta.mom(length=25*p, append=True)      # Momentum
-        data.ta.roc(length=15*p, append=True)      # Rate of Change
-        data.ta.willr(length=7*p, append=True)     # Williams %R
-        data.ta.ao(fast=3*p, slow=17*p, append=True)  # Awesome Oscillator
-        data.ta.kama(length=5*p, append=True)      # Kaufman Adaptive Moving Average
-        data.ta.cg(length=5*p, append=True)        # Center of Gravity
-        data.ta.bbands(length=20*p, std=1*p, append=True)  # Bollinger Bands
-        data.ta.atr(length=7*p, append=True)       # Average True Range
-        data.ta.kc(length=20*p, scalar=1.5*p, append=True)  # Keltner Channels
-        data.ta.donchian(lower_length=20*p, upper_length=20*p, append=True)  # Donchian Channels
-        data.ta.rvi(length=7*p, append=True)       # Relative Vigor Index
-        data.ta.cmf(length=15*p, append=True)      # Chaikin Money Flow
-        data.ta.mfi(length=14*p, append=True)      # Money Flow Index
-        data.ta.eom(length=14*p, append=True)      # Ease of Movement
-        data.ta.nvi(length=128*p, append=True)     # Negative Volume Index
-        data.ta.fisher(length=9*p, append=True)    # Fisher Transform
-        data.ta.decay(length=5*p, mode="linear", append=True)      # Decay (Linear)
-        data.ta.decay(length=5*p, mode="exponential", append=True) # Decay (Exponential)
-        data.ta.vortex(length=14*p, append=True)   # Vortex Indicator
-        data.ta.zscore(length=20*p, append=True)   # Z-Score
-        data.ta.entropy(length=10*p, append=True)  # Entropy
+    for p in [1, 3, 6]:
+        data.ta.ema(length=10*p, append=True)        # EMA - faster than SMA, better for recent weekly shifts
+        data.ta.hma(length=10*p, append=True)        # HMA - smooths without much lag
+        data.ta.macd(fast=6*p, slow=13*p, signal=4*p, append=True)  # MACD - momentum and trend crossover
+        data.ta.rsi(length=10*p, append=True)        # RSI - tuned for weekly sentiment
+        data.ta.stoch(k=10*p, d=3*p, append=True)    # Stoch - short-term momentum
+        data.ta.supertrend(length=3*p, multiplier=1.5*p, append=True)  # Supertrend - tuned for shorter trend cycles
+        data.ta.mom(length=10*p, append=True)        # Momentum
+        data.ta.roc(length=10*p, append=True)        # Rate of change - volatility/strength
+        data.ta.willr(length=10*p, append=True)      # Williams %R - overbought/oversold weekly
+        data.ta.ao(fast=3*p, slow=10*p, append=True) # AO - short vs long trend shift
+        data.ta.kama(length=10*p, append=True)       # Adaptive to market noise
+        data.ta.bbands(length=10*p, std=2, append=True)  # Bollinger Bands
+        data.ta.atr(length=10*p, append=True)        # ATR - weekly volatility
+        data.ta.donchian(lower_length=10*p, upper_length=10*p, append=True)  # Breakout strategy
+        data.ta.cmf(length=10*p, append=True)        # Volume flow
+        data.ta.mfi(length=10*p, append=True)        # Money Flow Index
+        data.ta.obv(append=True)                     # OBV - daily resolution, longer trend volume view
+        data.ta.adosc(fast=2*p, slow=4*p, append=True)  # A/D Oscillator
+        data.ta.zscore(length=10*p, append=True)     # Detect outlier behavior weekly
+        data.ta.vwap(append=True)                    # VWAP - important for weekly levels
 
     for p1, p2 in zip([3, 5, 10], [9, 17, 34]):
         data.ta.adosc(fast=p1, slow=p2, append=True)  # Chaikin Accumulation/Distribution Oscillator
@@ -144,13 +130,21 @@ def apply_indicators_to_group(
     data.ta.obv(append=True)     # On Balance Volume
     data.ta.squeeze(append=True) # Squeeze Momentum Indicator
 
-    data.set_index('date', inplace=True)
     data.ta.vwap(append=True)    # Volume Weighted Average Price
+
+    # Drop all columns starting with 'SUPERT' but keep those starting with 'SUPERTd'
+    cols_to_drop = [col for col in data.columns if col.startswith('SUPERT') and not col.startswith('SUPERTd')]
+    data.drop(columns=cols_to_drop, inplace=True)
+    
+    # Fill NaNs in SUPERTd columns with 0
+    supertd_cols = [col for col in data.columns if col.startswith('SUPERTd')]
+    data[supertd_cols] = data[supertd_cols].fillna(0)
 
     logger.info(f"Finished creating new features for ticker {data['symbol'].iloc[0]}.")
     
     return data
 
+#TODO: find the first index, and the last index with nans, and clip the dataset accordingly
 
 def perform_feature_engineering(
     data: pd.DataFrame
@@ -377,18 +371,6 @@ def widden_df(
     return data_wide
 
 
-def handle_missing_values(
-    data: pd.DataFrame
-) -> pd.DataFrame:
-    # Drop features with more than 30% missing values
-    missing_ratio = data.isna().mean()
-    cols_to_drop = missing_ratio[missing_ratio > 0.3].index
-
-    data.drop(columns=cols_to_drop, inplace=True)
-
-    return data
-
-
 def prepare_model_input(
     data: pd.DataFrame
     ,is_to_feature_store: bool = False
@@ -415,8 +397,6 @@ def prepare_model_input(
     )
     data_wide = widden_df(engineered_data)
 
-    data_final = handle_missing_values(data_wide)
-
     # Get final feature stores versions
     versions = {
         key: max(versions_engineering.get(key, 0), versions_target.get(key, 0))
@@ -427,7 +407,7 @@ def prepare_model_input(
 
     with mlflow.start_run(run_name="prepare_model_input", nested=True):
         # Merge features and label on date
-        merged = pd.merge(data_final, data_labels, on='date', how='inner')
+        merged = pd.merge(data_wide, data_labels, on='date', how='inner')
         logger.info(f"Merged data shape: {merged.shape}")
 
         # Drop rows with missing label

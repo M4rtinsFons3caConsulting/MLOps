@@ -238,7 +238,7 @@ def collect_yf_data(
             # no need to download
             logger.info(f"No data returned starting from {effective_start}")
             
-            return last_data_ingested, last_ingestion_date
+            return last_data_ingested, last_ingestion_date, versions
             
         else:
             logger.info(f"Starting data ingestion for symbols: {symbols}")
