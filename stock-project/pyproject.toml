@@ -31,7 +31,8 @@ dependencies = [
     "optuna-integration (>=4.4)",
     "shap (==0.48.0)",
     "nannyml (==0.13)",
-    "evidently (==0.3.0)"
+    "evidently (==0.3.0)",
+    "prefect (==3.4.6)"
 ]
 
 [project.scripts]
