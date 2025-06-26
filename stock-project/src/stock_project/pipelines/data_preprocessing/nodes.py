@@ -153,7 +153,7 @@ def perform_feature_engineering(
 
             # Initialize versions if missing
             if "numerical_features" not in versions:
-                versions["numerical_features"] = 1
+                versions["numerical_features"] = 0
                 
             logger.info("Feature store versions retrieved.")
 
@@ -181,6 +181,8 @@ def perform_feature_engineering(
             numerical_feature_descriptions = []
             
             logger.info("Uploading numerical features to feature store...")
+            # Update feature store version
+            versions["numerical_features"] += 1
             # Update feature store
             object_fs_numerical_features = to_feature_store(
                 data_numeric
@@ -191,8 +193,6 @@ def perform_feature_engineering(
                 ,validation_expectation_suite_numerical
                 ,credentials["feature_store"]
             )
-            # Update feature store version
-            versions["numerical_features"] += 1
 
             logger.info("Numerical features upload complete.")
 
@@ -276,7 +276,7 @@ def create_target(
 
             # Initialize versions if missing
             if "target_feature" not in versions:
-                versions["target_feature"] = 1
+                versions["target_feature"] = 0
                 
             logger.info("Feature store versions retrieved.")
 
@@ -284,6 +284,9 @@ def create_target(
             target_feature_description = []
             logger.info("Uploading target feature to feature store...")
 
+            # Update feature store version
+            versions["target_feature"] += 1
+            # Add features to feature store
             object_fs_target_feature = to_feature_store(
                 data_label
                 ,"target_feature"
@@ -293,8 +296,6 @@ def create_target(
                 ,validation_expectation_suite_label
                 ,credentials["feature_store"]
             )
-            # Update feature store version
-            versions["target_feature"] += 1
 
             logger.info("Target feature upload complete.")
 

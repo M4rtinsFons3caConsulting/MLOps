@@ -34,7 +34,6 @@ credentials = conf_loader["credentials"]
 # Logger
 logger = logging.getLogger(__name__)
 
-# TODO: DOCUMENTATION
 
 def build_expectation_suite(
     df
@@ -323,14 +322,17 @@ def collect_yf_data(
 
             # Initialize versions if missing
             if "numerical_features" not in versions:
-                versions["numerical_features"] = 1
+                versions["numerical_features"] = 0
             if "categorical_features" not in versions:
-                versions["categorical_features"] = 1
+                versions["categorical_features"] = 0
                 
             logger.info("Feature store versions retrieved.")
 
             logger.info("Uploading numerical features to feature store...")
 
+            # Update feature store version
+            versions["numerical_features"] += 1
+            # Add features to feature store
             object_fs_numerical_features = to_feature_store(
                 data_numeric
                 ,"numerical_features"
@@ -340,13 +342,14 @@ def collect_yf_data(
                 ,validation_expectation_suite_numerical
                 ,credentials["feature_store"]
             )
-            # Update feature store version
-            versions["numerical_features"] += 1
 
             logger.info("Numerical features upload complete.")
 
             logger.info("Uploading categorical features to feature store...")
 
+            # Update feature store version
+            versions["categorical_features"] += 1
+            # Add features to feature store
             object_fs_categorical_features = to_feature_store(
                 data_categorical
                 ,"categorical_features"
@@ -356,8 +359,6 @@ def collect_yf_data(
                 ,validation_expectation_suite_categorical
                 ,credentials["feature_store"]
             )
-            # Update feature store version
-            versions["categorical_features"] += 1
 
             logger.info("Categorical features upload complete.")
 
