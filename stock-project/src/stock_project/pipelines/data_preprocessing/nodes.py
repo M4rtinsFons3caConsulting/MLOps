@@ -118,6 +118,7 @@ def apply_indicators_to_group(
     
     return data
 
+
 def perform_feature_engineering(
     data: pd.DataFrame
     ,is_to_feature_store: bool = False
