@@ -8,6 +8,7 @@ from ydata_profiling.model import BaseDescription, expectation_algorithms
 from ydata_profiling.model.handler import Handler
 from ydata_profiling.utils.dataframe import slugify
 from great_expectations.checkpoint import SimpleCheckpoint
+from great_expectations.core.batch import RuntimeBatchRequest
 
 class ExpectationHandler(Handler):
     """Default handler"""
@@ -82,11 +83,18 @@ class ExpectationsReportV3:
         if not data_context:
             data_context = ge.data_context.DataContext()
 
-        data_asset = data_context.get_datasource(datasource_name).get_asset(data_asset_name)
+        batch_request = RuntimeBatchRequest(
+            datasource_name=datasource_name,
+            data_connector_name="default_runtime_data_connector_name",
+            data_asset_name=data_asset_name,
+            runtime_parameters={"batch_data": dataframe},
+            batch_identifiers={"default_identifier_name": "default_identifier"},
+        )
 
-        batch_request = data_asset.build_batch_request(dataframe=dataframe)
-
-        suite = data_context.add_or_update_expectation_suite(expectation_suite_name=suite_name)
+        try:
+            suite = data_context.get_expectation_suite(suite_name)
+        except Exception:
+            suite = data_context.create_expectation_suite(suite_name)
 
 
         # Instantiate an in-memory pandas dataset
@@ -102,7 +110,7 @@ class ExpectationsReportV3:
         # We don't actually update the suite object on the batch in place, so need
         # to get the populated suite from the batch
         suite = validator.get_expectation_suite(discard_failed_expectations=False)
-        data_context.update_expectation_suite(suite)
+        data_context.save_expectation_suite(expectation_suite=suite)
         
         validation_result_identifier = None
         if run_validation:
@@ -127,7 +135,7 @@ class ExpectationsReportV3:
 
         # Write expectations and open data docs
         if save_suite or build_data_docs:
-            data_context.update_expectation_suite(suite)
+            data_context.save_expectation_suite(expectation_suite=suite)
 
         if build_data_docs:
             data_context.build_data_docs()

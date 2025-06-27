@@ -27,6 +27,10 @@ ARG KEDRO_GID=0
 COPY --chown=${KEDRO_UID}:${KEDRO_GID} . .
 COPY --chown=${KEDRO_UID}:${KEDRO_GID} conf/local/credentials.yml /home/kedro_docker/conf/local/credentials.yml
 
+# Fix permissions
+RUN find /home/kedro_docker -type d -exec chmod 755 {} \; && \
+    find /home/kedro_docker -type f -exec chmod 644 {} \;
+
 EXPOSE 8888
 
 CMD ["kedro", "run"]

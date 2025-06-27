@@ -293,11 +293,11 @@ h11==0.16.0
     #   uvicorn
 h2==4.2.0
     # via httpx
-hopsworks==4.2.2
+hopsworks==4.2.6
     # via -r requirements.txt
 hpack==4.1.0
     # via h2
-hsfs==3.7.5
+# hsfs==3.7.5
     # via hopsworks
 hsml==3.7.2
     # via hopsworks

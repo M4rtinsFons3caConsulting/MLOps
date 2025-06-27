@@ -20,7 +20,9 @@ import mlflow
 
 # Expectations
 import great_expectations as gx
+from great_expectations.data_context import DataContext
 from great_expectations.core import ExpectationSuite, ExpectationConfiguration
+from great_expectations.core.batch import RuntimeBatchRequest
 from ydata_profiling import ProfileReport
 from ydata_profiling.expectations_report import ExpectationsReport
 from .auto_expectations import ExpectationsReportV3
@@ -55,19 +57,34 @@ def build_expectation_suite(
     """
     # Get GE context
     context_root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../gx"))
-    context = gx.get_context(context_root_dir=context_root_dir)
+    context = DataContext(context_root_dir=context_root_dir)
 
     # Set up or retrieve datasource
     try:
-        datasource = context.sources.add_pandas(datasource_name)
+        datasource = context.add_datasource(
+            name=datasource_name,
+            class_name="Datasource",
+            execution_engine={
+                "class_name": "PandasExecutionEngine"
+            },
+            data_connectors={
+                "default_runtime_data_connector_name": {
+                    "class_name": "RuntimeDataConnector",
+                    "batch_identifiers": ["default_identifier_name"],
+                }
+            },
+        )
     except:
         datasource = context.datasources[datasource_name]
 
     # Set up or retrieve asset
-    try:
-        data_asset = datasource.add_dataframe_asset(name=data_asset_name, dataframe=df)
-    except:
-        data_asset = datasource.get_asset(data_asset_name)
+    batch_request = RuntimeBatchRequest(
+        datasource_name=datasource_name,
+        data_connector_name="default_runtime_data_connector_name",
+        data_asset_name=data_asset_name,
+        runtime_parameters={"batch_data": df},
+        batch_identifiers={"default_identifier_name": "default_id"},
+    )
 
     # Profile the data using ydata_profiling
     profile = ProfileReport(df, title="Auto Profiling Report", minimal=True)
@@ -92,7 +109,7 @@ def build_expectation_suite(
             exp.kwargs['min_value'] = 0
 
     # Save the expectation suite
-    context.add_or_update_expectation_suite(expectation_suite=auto_suite)
+    context.save_expectation_suite(expectation_suite=auto_suite)
 
     return auto_suite
 
