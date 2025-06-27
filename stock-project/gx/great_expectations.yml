@@ -96,33 +96,33 @@ data_docs_sites:
 anonymous_usage_statistics:
   data_context_id: 72b05bad-bfc9-494f-903c-8af76501039f
   enabled: true
-fluent_datasources:
-  stock_datasource:
-    type: pandas
-    assets:
-      stock_asset:
-        type: dataframe
-        batch_metadata: {}
-  numerical_features:
-    type: pandas
-    assets:
-      numerical_features_asset:
-        type: dataframe
-        batch_metadata: {}
-  categorical_features:
-    type: pandas
-    assets:
-      categorical_features_asset:
-        type: dataframe
-        batch_metadata: {}
-  target_feature:
-    type: pandas
-    assets:
-      target_feature_asset:
-        type: dataframe
-        batch_metadata: {}
+# fluent_datasources:
+#   stock_datasource:
+#     type: pandas
+#     assets:
+#       stock_asset:
+#         type: dataframe
+#         batch_metadata: {}
+#   numerical_features:
+#     type: pandas
+#     assets:
+#       numerical_features_asset:
+#         type: dataframe
+#         batch_metadata: {}
+#   categorical_features:
+#     type: pandas
+#     assets:
+#       categorical_features_asset:
+#         type: dataframe
+#         batch_metadata: {}
+#   target_feature:
+#     type: pandas
+#     assets:
+#       target_feature_asset:
+#         type: dataframe
+#         batch_metadata: {}
 notebooks:
-include_rendered_content:
-  globally: false
-  expectation_suite: false
-  expectation_validation_result: false
+# include_rendered_content:
+#   globally: false
+#   expectation_suite: false
+#   expectation_validation_result: false

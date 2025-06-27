@@ -29,7 +29,8 @@ def register_pipelines() -> Dict[str, Pipeline]:
     drift_pipeline = drift.create_pipeline()
 
     return {
-        "ingestion": ingestion_pipeline
+        "__default__": preprocessing_pipeline + splitting_pipeline + prediction_pipeline
+        ,"ingestion": ingestion_pipeline
         ,"unit_tests": unit_tests_pipeline
         ,"preprocess": preprocessing_pipeline
         ,"split": splitting_pipeline

@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools", "wheel", "Cython"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -14,7 +14,7 @@ dependencies = [
     "kedro[jupyter]~=0.19.14",
     "kedro-datasets[pandas-csvdataset, pandas-exceldataset, pandas-parquetdataset, plotly-plotlydataset, plotly-jsondataset, matplotlib-matplotlibwriter]>=3.0",
     "kedro-viz>=6.7.0",
-    "seaborn~=0.12.1",
+    "seaborn==0.13.2",
     "pandas (==2.1.4)",
     "kedro (>=0.19.14,<0.20.0)",
     "kedro-mlflow (>=0.14.4,<0.15.0)",
@@ -32,7 +32,8 @@ dependencies = [
     "shap (==0.48.0)",
     "nannyml (==0.13)",
     "evidently (==0.3.0)",
-    "prefect (==3.4.6)"
+    "prefect (==3.4.6)",
+    "kedro-docker==0.6.2"
 ]
 
 [project.scripts]

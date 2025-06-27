@@ -177,7 +177,7 @@ def perform_feature_engineering(
                 expectation_suite_name="numerical_expectations"
             )
 
-            mlflow.log_artifacts(context_root_dir, artifact_path="great_expectations")
+            # mlflow.log_artifacts(context_root_dir, artifact_path="great_expectations")
 
             numerical_feature_descriptions = []
             

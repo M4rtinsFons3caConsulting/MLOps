@@ -16,7 +16,7 @@ from ydata_profiling.expectations_report import ExpectationsReport
 
 import mlflow
 
-from data_ingestion.auto_expectations import ExpectationsReportV3
+from stock_project.pipelines.data_ingestion.auto_expectations import ExpectationsReportV3
 
 
 
@@ -75,8 +75,7 @@ def get_validation_results(checkpoint_result):
                 ,"Column Pair" : (column_A, column_B)
                 ,"Max Value" :max_value
                 ,"Min Value" :min_value
-                ,"Element Coun# Update feature store version
-            versions["target_feature"] += 1t" :element_count
+                ,"Element Count" :element_count
                 ,"Unexpected Count" :unexpected_count
                 ,"Unexpected Percent":unexpected_percent
                 ,"Value Set" : value_set

@@ -6,14 +6,11 @@ Dockerfile
 .dockerignore
 
 # ignore potentially sensitive credentials files
-conf/**/*credentials*
-
-# ignore all local configuration
-conf/local
-!conf/local/.gitkeep
+# conf/**/*credentials*
+# !conf/local/credentials.yml
 
 # ignore everything in the following folders
-data
+# data
 logs
 notebooks
 references
