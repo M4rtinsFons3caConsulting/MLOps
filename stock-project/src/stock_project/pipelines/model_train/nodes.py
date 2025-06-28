@@ -62,8 +62,8 @@ def model_train(
         try:
             model = pipeline.named_steps.get("model") or pipeline.steps[-1][1]
             feature_names = pipeline.named_steps['feature_selection'].get_feature_names_out()
-
-            explainer = shap.Explainer(model)
+            
+            explainer = shap.Explainer(model, X_train[feature_names])
             shap_values = explainer(X_train[feature_names])
 
 

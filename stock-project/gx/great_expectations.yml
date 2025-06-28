@@ -14,16 +14,16 @@ config_version: 3.0
 # Read more at https://docs.greatexpectations.io/docs/guides/connecting_to_your_data/connect_to_data_overview
 datasources:
   target_feature:
+    module_name: great_expectations.datasource
     execution_engine:
-      module_name: great_expectations.execution_engine
       class_name: PandasExecutionEngine
+      module_name: great_expectations.execution_engine
     data_connectors:
       default_runtime_data_connector_name:
+        module_name: great_expectations.datasource.data_connector
         batch_identifiers:
           - default_identifier_name
-        module_name: great_expectations.datasource.data_connector
         class_name: RuntimeDataConnector
-    module_name: great_expectations.datasource
     class_name: Datasource
 config_variables_file_path: uncommitted/config_variables.yml
 
