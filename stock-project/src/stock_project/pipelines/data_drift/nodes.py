@@ -1,6 +1,15 @@
 """
-This is a pipeline 'data_drift'
-generated using Kedro 0.19.14
+Pipeline 'data_drift' node for data drift detection
+
+Provides drift detection logic for the pipeline using NannyML and Evidently AI.
+
+Functions called:
+- `nml.UnivariateDriftCalculator.fit` and `.calculate`: Calculates univariate drift on numerical columns.
+- `nml.DataReconstructionDriftCalculator.fit` and `.calculate`: Calculates reconstruction drift on numerical columns.
+- `plot(kind='drift').write_html`: Generates and saves HTML drift plots for monitoring.
+- `evidently.Report.run` and `.save_html`: Generates and saves an Evidently HTML drift report.
+
+Used for monitoring data drift between reference (training) and analysis (incoming) datasets.
 """
 
 from typing import Tuple
@@ -9,7 +18,7 @@ import nannyml as nml
 from evidently.report import Report
 from sklearn.impute import SimpleImputer
 from evidently.metric_preset import DataDriftPreset
-# from evidently.metrics import DataDriftPreset
+
 
 def apply_drift(
     data_reference: pd.DataFrame,

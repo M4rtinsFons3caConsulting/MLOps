@@ -1,3 +1,25 @@
+"""
+Pipeline 'data_ingestion' node for data ingestion and wrangling.
+
+Module for ingesting, validating, profiling, and storing stock market data.
+
+This module provides functions to:
+- Collect historical stock data from yfinance with incremental ingestion.
+- Automatically generate Great Expectations expectation suites using ydata_profiling.
+- Validate data against expectation suites.
+- Store validated data into a feature store using hopsworks.
+- Track ingestion metadata and feature store versioning with Kedro and MLflow.
+
+Dependencies:
+- pandas, yfinance, kedro, mlflow, great_expectations, ydata_profiling, hopsworks
+
+Key Functions:
+- collect_yf_data: Ingests stock data incrementally, profiles, validates, optionally stores features.
+- build_expectation_suite: Creates an expectation suite from a DataFrame using profiling.
+- to_feature_store: Validates and writes data to the feature store with metadata and statistics.
+
+"""
+
 # STL
 import os
 import logging

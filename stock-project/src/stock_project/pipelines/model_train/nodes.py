@@ -1,7 +1,15 @@
 """
-This is a pipeline 'model_train'
-generated using Kedro 0.19.14
+Pipeline 'model_train' node for training a scikit-learn pipeline and generating SHAP explanations.
+
+- Loads MLflow experiment configuration.
+- Trains the provided pipeline on training data.
+- Logs the trained model and metrics to MLflow.
+- Computes and plots SHAP summary if possible.
+- Returns the trained pipeline and SHAP figure.
+
+Generated with Kedro 0.19.14.
 """
+
 
 from typing import Tuple
 

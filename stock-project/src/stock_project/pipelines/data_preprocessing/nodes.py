@@ -1,7 +1,29 @@
 """
-This is a pipeline 'data_preprocessing'
-generated using Kedro 0.19.14
+Pipeline 'data_preprocessing' node for preprocessing data.
+
+This module provides functions for preprocessing and feature engineering of OHLCV market data,
+including technical indicator computation, feature store integration, label creation, data reshaping,
+and cleaning. It supports logging and version tracking with MLflow and integrates with Kedro pipelines
+and Great Expectations for data validation.
+
+Key Functions:
+- apply_indicators_to_group: Computes a wide range of technical indicators on grouped OHLCV data.
+- perform_feature_engineering: Applies technical indicators, manages feature store versions, and uploads features.
+- create_target: Generates binary momentum labels for QQQ based on future returns, with feature store upload support.
+- widden_df: Converts long-format time series data to wide format with ticker-feature column naming.
+- handle_missing_values: Cleans data by removing certain columns and imputing or dropping missing values.
+- prepare_model_input: Combines engineered features and target labels into a final model-ready dataset, managing feature store versions.
+
+Features:
+- Extensive use of pandas_ta for technical analysis indicators.
+- Integration with Kedro's session and catalog for dataset and version management.
+- Uses MLflow for experiment tracking including parameters, metrics, and artifacts.
+- Supports Great Expectations for data quality expectations and validation.
+- Handles incremental feature store versioning and uploads via custom functions.
+- Designed for time series financial data with a focus on incremental, modular data processing.
+
 """
+
 
 # STL
 import time

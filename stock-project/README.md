@@ -1,100 +1,115 @@
-# stock-project
+# Stock Project - MLOps Pipeline
 
-[![Powered by Kedro](https://img.shields.io/badge/powered_by-kedro-ffc900?logo=kedro)](https://kedro.org)
+This project implements a comprehensive machine learning pipeline for stock market data using **Kedro**. It is designed to handle the full lifecycle of a time-series classification model with a strong focus on reproducibility, interpretability, and MLOps best practices.
 
-## Overview
+---
 
-This is your new Kedro project, which was generated using `kedro 0.19.14`.
+## Pipeline Implementation Details
 
-Take a look at the [Kedro documentation](https://docs.kedro.org) to get started.
+### 1. Data Preprocessing
 
-## Rules and guidelines
+The preprocessing pipeline handles raw stock data and transforms it into a format suitable for modeling. This involves:
 
-In order to get the best out of the template:
+- **Feature Engineering:** Creating domain-specific features such as technical indicators.
+- **Target Creation:** Defining the prediction target (e.g., future price movement).
+- **Data Widening:** Expanding features across different time windows or instruments.
+- **Model Input Preparation:** Aligning and formatting features and labels into clean datasets.
 
-* Don't remove any lines from the `.gitignore` file we provide
-* Make sure your results can be reproduced by following a [data engineering convention](https://docs.kedro.org/en/stable/faq/faq.html#what-is-data-engineering-convention)
-* Don't commit data to your repository
-* Don't commit any credentials or your local configuration to your repository. Keep all your credentials and local configuration in `conf/local/`
+**Outputs:**
+- `preprocessed_data`: The cleaned and feature-rich dataset.
+- `feature_store_versions`: Metadata tracking feature versions for reproducibility.
 
-## How to install dependencies
+---
 
-Declare any dependencies in `requirements.txt` for `pip` installation.
+### 2. Data Splitting
 
-To install them, run:
+A critical step for time-series data, the splitting ensures that training and testing sets respect chronological order to prevent data leakage.
 
-```
-pip install -r requirements.txt
-```
+- Uses a custom split function that sorts by date and splits without shuffling.
+- Tracks split parameters and dataset sizes in **MLflow** for auditability.
 
-## How to run your Kedro pipeline
+**Outputs:**
+- `X_train`, `X_test`: Feature sets for training and testing.
+- `y_train`, `y_test`: Corresponding labels.
 
-You can run your Kedro project with:
+---
 
-```
-kedro run
-```
+### 3. Feature Selection: `KBestRFESelector`
 
-## How to test your Kedro project
+This custom sklearn transformer combines two powerful techniques:
 
-Have a look at the files `src/tests/test_run.py` and `src/tests/pipelines/data_science/test_pipeline.py` for instructions on how to write your tests. Run the tests as follows:
+- **SelectKBest:** Selects top `k` features based on univariate statistical tests (default: ANOVA F-value).
+- **Recursive Feature Elimination (RFE):** Further refines the selection to `n_features_to_select` using a model-based ranking, typically a Random Forest.
 
-```
-pytest
-```
+This layered approach balances statistical relevance and model performance to reduce dimensionality effectively.
 
-To configure the coverage threshold, look at the `.coveragerc` file.
+---
 
-## Project dependencies
+### 4. Feature Scaling: `FeatureScaler`
 
-To see and update the dependency requirements for your project use `requirements.txt`. You can install the project requirements with `pip install -r requirements.txt`.
+Financial time series often contain heterogeneous feature scales (e.g., RSI ranges 0-100 vs ATR measuring volatility). This class automates scaler selection per feature using heuristics:
 
-[Further information about project dependencies](https://docs.kedro.org/en/stable/kedro_project_setup/dependencies.html#project-specific-dependencies)
+- **MinMaxScaler:** For bounded features like RSI.
+- **RobustScaler:** For features with outliers.
+- **StandardScaler:** Default for normally distributed features.
 
-## How to work with Kedro and notebooks
+Scaler choices and feature statistics are logged for MLOps monitoring and model interpretation.
 
-> Note: Using `kedro jupyter` or `kedro ipython` to run your notebook provides these variables in scope: `catalog`, `context`, `pipelines` and `session`.
->
-> Jupyter, JupyterLab, and IPython are already included in the project requirements by default, so once you have run `pip install -r requirements.txt` you will not need to take any extra steps before you use them.
+---
 
-### Jupyter
-To use Jupyter notebooks in your Kedro project, you need to install Jupyter:
+### 5. Cross-Validation: `PurgedKFold`
 
-```
-pip install jupyter
-```
+Standard KFold is inadequate for time series due to leakage risk. This custom splitter:
 
-After installing Jupyter, you can start a local notebook server:
+- Divides data into `n_splits` folds.
+- **Purges** training samples that fall within a `purging_window` (time gap before and after validation fold).
+- Applies an optional **embargo_window** after the validation fold to further prevent leakage.
 
-```
-kedro jupyter notebook
-```
+This ensures clean temporal separation between training and validation, mitigating lookahead bias.
 
-### JupyterLab
-To use JupyterLab, you need to install it:
+---
 
-```
-pip install jupyterlab
-```
+### 6. Model Training: `model_train`
 
-You can also start JupyterLab:
+Handles end-to-end training within an MLflow experiment:
 
-```
-kedro jupyter lab
-```
+- Loads experiment configuration dynamically.
+- Fits the supplied pipeline on training data.
+- Logs the trained pipeline artifact and accuracy metrics to MLflow.
 
-### IPython
-And if you want to run an IPython session:
+**Returns:**
+- The trained pipeline (ready for production).
 
-```
-kedro ipython
-```
+---
 
-### How to ignore notebook output cells in `git`
-To automatically strip out all output cell contents before committing to `git`, you can use tools like [`nbstripout`](https://github.com/kynan/nbstripout). For example, you can add a hook in `.git/config` with `nbstripout --install`. This will run `nbstripout` before anything is committed to `git`.
+### 7. Model Assessment: `find_champion_model`
 
-> *Note:* Your output cells will be retained locally.
+This step involves automated hyperparameter tuning and cross-validation to identify the best-performing model configuration using user-defined parameters:
 
-## Package your Kedro project
+- Parameters and hyperparameters are injected via Kedro `params`.
+- Cross-validation arguments and scoring metrics are customizable.
+- The champion model is selected based on validation performance.
 
-[Further information about building project documentation and packaging your project](https://docs.kedro.org/en/stable/tutorial/package_a_project.html)
+---
+
+### 8. Model Prediction: `make_predictions`
+
+A lightweight function that:
+
+- Accepts a trained pipeline and a test feature set.
+- Outputs predictions as a pandas Series indexed by the input test data.
+- Logs prediction events for traceability.
+
+---
+
+## Technology Stack
+
+- **Kedro:** Pipeline orchestration and reproducibility.
+- **scikit-learn:** Modeling, feature selection, scaling.
+- **MLflow:** Experiment tracking, model logging, and deployment.
+- **Pandas & NumPy:** Data manipulation and numerical operations.
+- **Matplotlib:** Visualization of model outputs.
+
+---
+
+*For detailed node-level implementation and API references, see the documentation generated by Sphinx in the `docs` folder.*

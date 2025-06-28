@@ -1,6 +1,19 @@
 """
-This is a pipeline 'data_splitting'
-generated using Kedro 0.19.14
+Pipeline 'data_splitting' node for data splitting into training, and hold-out.
+
+This module provides functionality to split time series data into training and testing sets
+while preserving chronological order. It logs split parameters and dataset sizes using MLflow.
+
+Functions:
+- split_data: Splits data into train/test sets without shuffling, suitable for time series.
+
+Inputs:
+- data: DataFrame containing features, a 'label' column, and a 'date' column.
+- test_size: Fraction of data reserved for testing (default 0.2).
+
+Outputs:
+- X_train, X_test: Feature subsets for training and testing.
+- y_train, y_test: Label subsets for training and testing.
 """
 
 import logging

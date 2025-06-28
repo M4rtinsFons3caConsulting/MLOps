@@ -1,9 +1,13 @@
 """
-This is a boilerplate pipeline 'data_drift'
-generated using Kedro 0.19.14
+Pipeline 'data_drift' for data drift detection.
+
+This pipeline detects data drift using training and test feature sets.
+It applies univariate and multivariate drift checks to monitor stability
+and data quality in production pipelines.
+
 """
 
-from kedro.pipeline import node, Pipeline, pipeline  # noqa
+from kedro.pipeline import node, Pipeline, pipeline
 from .nodes import apply_drift
 
 

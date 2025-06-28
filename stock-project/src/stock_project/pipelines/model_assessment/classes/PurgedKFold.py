@@ -1,3 +1,21 @@
+"""
+PurgedKFold cross-validator for time series data.
+
+Implements K-Fold splitting with purging and optional embargo windows to prevent
+data leakage in time-dependent datasets. Training samples within a specified time
+window around the validation fold are excluded (purged) from training.
+
+Classes:
+----------
+PurgedKFold
+    Custom cross-validator with time-based purging and embargo for safer model validation
+    on time series data indexed by datetime.
+
+Usage:
+----------
+- Requires input data X with a datetime index.
+- Yields train and validation indices with purged training sets to avoid temporal leakage.
+"""
 
 import pandas as pd
 import numpy as np

@@ -1,6 +1,14 @@
 """
-This is a boilerplate pipeline 'data_splitting'
-generated using Kedro 0.19.14
+
+Pipeline 'data_splitting' for data splitting into training, and hold-out.
+
+
+Defines the pipeline to split preprocessed data into training and testing sets
+using the split_data function from the nodes module.
+
+Pipeline:
+- data_splitting_node: Executes split_data with inputs 'preprocessed_data' and 'test_size' parameter,
+  outputs training and testing features and labels.
 """
 
 from kedro.pipeline import node, Pipeline, pipeline  # noqa

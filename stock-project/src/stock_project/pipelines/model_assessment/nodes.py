@@ -1,5 +1,5 @@
 """
-optuna_model_search.py
+Pipeline 'model_assessment' node for selecting the best model.
 
 This module provides a framework for automated hyperparameter optimization of machine learning models
 using Optuna's integration with scikit-learn (OptunaSearchCV). 

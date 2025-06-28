@@ -1,23 +1,25 @@
 """
-Pipeline '01_data_ingestion' generated using Kedro 0.19.14.
+Pipeline 'data_ingestion' for data ingestion and wrangling.
 
-This pipeline performs the following:
-- Downloads historical OHLCV data from yfinance for a given list of symbols.
+This pipeline performs the following steps:
+- Downloads historical OHLCV data from yfinance for specified ticker symbols.
 - Computes the effective start date based on user input and the last ingestion checkpoint.
-- Ingests data from the effective start to the latest available date.
+- Ingests data incrementally from the effective start date to the latest available date.
 - Returns a long-format DataFrame with raw market data.
 - Updates the last_ingestion_date for future incremental ingestion.
+- Optionally stores data to a feature store and tracks feature store versions.
 
 Inputs:
-- params:symbols: List of ticker symbols to download.
-- params:user_start_date: User-defined earliest ingestion date (YYYY-MM-DD).
-- last_ingestion_date: Date of the last successful ingestion, tracked persistently.
+- params:symbols (List[str]): List of ticker symbols to download.
+- params:user_start_date (str): User-defined earliest ingestion date (YYYY-MM-DD).
+- params:is_to_feature_store (bool): Flag to enable feature store upload.
+- last_ingestion_date (str, optional): Date of last successful ingestion (tracked persistently).
 
 Outputs:
-- raw_data: Ingested OHLCV data in long format with columns [date, ticker, open, high, low, close, volume].
-- last_ingestion_date: Latest available date from the new data, to be reused as ingestion checkpoint.
+- raw_data (pd.DataFrame): Ingested OHLCV data in long format with columns [date, symbol, open, high, low, close, volume].
+- last_ingestion_date (str): Latest available date from the new data, for incremental ingestion checkpoint.
+- feature_store_versions (dict): Current versions of feature groups in the feature store.
 """
-
 from kedro.pipeline import node, Pipeline, pipeline
 from .nodes import collect_yf_data
 

@@ -1,3 +1,19 @@
+"""
+FeatureScaler
+
+Feature scaling module for financial time series data.
+
+Provides FeatureScaler, an automatic scaler that detects optimal scaling methods
+for mixed financial features (e.g., RSI, ATR) using heuristics based on data distribution.
+
+Scalers supported:
+- MinMaxScaler for bounded features like RSI (0-100 range)
+- RobustScaler for features with outliers
+- StandardScaler as default fallback
+
+Includes feature statistics tracking for MLOps monitoring and model interpretation.
+"""
+
 import numpy as np
 import pandas as pd
 

@@ -1,6 +1,13 @@
 """
-This is a pipeline 'model_predict'
-generated using Kedro 0.19.14
+Pipeline 'model_predict' for generating predictions.
+
+Contains the `make_predictions` function to produce predictions
+from a trained model pipeline on test data.
+
+Functions:
+----------
+make_predictions(X_test: pd.DataFrame, pipeline: pickle) -> pd.Series
+    Predicts labels for the given test data using the provided pipeline.
 """
 
 

@@ -1,3 +1,15 @@
+"""
+Class KBestRFESelector
+
+Feature selection module combining SelectKBest and Recursive Feature Elimination (RFE).
+
+Provides the KBestRFESelector class, which first selects top features using SelectKBest
+based on a scoring function, then refines selection with RFE using a specified estimator.
+
+This approach balances univariate filtering and model-based recursive elimination
+to identify the most relevant features for classification tasks.
+"""
+
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.feature_selection import SelectKBest, f_classif, RFE
 from sklearn.ensemble import RandomForestClassifier
