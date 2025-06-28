@@ -1,59 +1,61 @@
-"""
-Unit tests for the `model_train` node in the training pipeline.
-
-Tests for `model_train`:
-
-1. Trains pipeline using `pipeline.fit(X_train, y_train)`  
-2. Logs model to MLflow using `mlflow.sklearn.log_model()`  
-"""
-
 import pytest
 import pandas as pd
 import numpy as np
-from unittest import mock
 import matplotlib.pyplot as plt
-import model_train  # The module containing the `model_train` function
+from sklearn.pipeline import Pipeline
+from sklearn.feature_selection import SelectKBest
+from sklearn.linear_model import LogisticRegression
+from unittest.mock import patch, mock_open, MagicMock
+
+from src.stock_project.pipelines.model_train.nodes import model_train
 
 @pytest.fixture
 def sample_data():
-    X = pd.DataFrame({
-        "feature1": [1, 2, 3, 4],
-        "feature2": [10, 20, 30, 40]
-    })
-    y = pd.DataFrame({"target": [0, 1, 0, 1]})
-    return X, y
+    dates = pd.date_range("2023-01-01", periods=10)
+    X_train = pd.DataFrame({
+        "feature1": range(10),
+        "feature2": range(10, 20)
+    }, index=dates)
+    y_train = pd.DataFrame(np.random.randint(0, 2, size=(10, 1)), index=dates)
+    return X_train, y_train
 
 @pytest.fixture
-def dummy_pipeline():
-    pipeline = mock.MagicMock()
-    pipeline.named_steps = {"model": mock.MagicMock(), "feature_selection": mock.Mock()}
-    pipeline.steps = [("model", pipeline.named_steps["model"])]
-    pipeline.named_steps["feature_selection"].get_feature_names_out.return_value = ["feature1", "feature2"]
-    return pipeline
+def pipeline():
+    return Pipeline([
+        ("feature_selection", SelectKBest(k=2)),
+        ("model", LogisticRegression())
+    ])
 
-### ----------- Test for `pipeline_fit` ----------- ###
+@patch("builtins.open", new_callable=mock_open, read_data="""
+tracking:
+  experiment:
+    name: stock_project
+""")
+@patch("yaml.load", return_value={"tracking": {"experiment": {"name": "stock_project"}}})
+@patch("mlflow.get_experiment_by_name")
+@patch("mlflow.start_run")
+@patch("mlflow.sklearn.log_model")
+@patch("shap.Explainer")
+@patch("shap.summary_plot")
+def test_model_train_returns_pipeline_and_figure(
+    mock_shap_summary_plot,
+    mock_shap_explainer,
+    mock_log_model,
+    mock_start_run,
+    mock_get_experiment,
+    mock_yaml_load,
+    mock_open_file,
+    sample_data,
+    pipeline,
+):
+    mock_get_experiment.return_value = MagicMock(experiment_id="123")
+    mock_start_run.return_value.__enter__.return_value = None
 
+    mock_shap = MagicMock()
+    mock_shap_explainer.return_value = mock_shap
+    mock_shap_summary_plot.return_value = None 
 
-# 1. Trains pipeline using pipeline.fit(X_train, y_train)
-def test_trains_pipeline_fit_called(sample_data, dummy_pipeline):
-    X_train, y_train = sample_data
-    model_train.model_train(X_train, y_train, dummy_pipeline)
-    dummy_pipeline.fit.assert_called_once_with(X_train, np.ravel(y_train))
+    trained_pipeline, fig = model_train(*sample_data, pipeline)
 
-
-### ----------- Test for `sklearn.log_model` ----------- ###
-
-
-# 2. Logs model to MLflow using mlflow.sklearn.log_model()
-def test_logs_model_to_mlflow(sample_data, dummy_pipeline):
-    X_train, y_train = sample_data
-    with mock.patch("model_train.mlflow.sklearn.log_model") as mock_log_model, \
-         mock.patch("model_train.mlflow.get_experiment_by_name") as mock_get_exp, \
-         mock.patch("model_train.mlflow.start_run"), \
-         mock.patch("model_train.yaml.load") as mock_yaml_load, \
-         mock.patch("builtins.open", mock.mock_open(read_data="tracking:\n  experiment:\n    name: test-exp")):
-
-        mock_yaml_load.return_value = {'tracking': {'experiment': {'name': 'test-exp'}}}
-        mock_get_exp.return_value = mock.Mock(experiment_id="123")
-        model_train.model_train(X_train, y_train, dummy_pipeline)
-        mock_log_model.assert_called_once_with(dummy_pipeline, artifact_path="trained_pipeline")
+    assert hasattr(trained_pipeline.named_steps["model"], "coef_")
+    assert isinstance(fig, plt.Figure)

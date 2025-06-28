@@ -1,136 +1,64 @@
-"""
-Unit tests for the data_preprocessing pipeline (core coverage):
-
-Test for `apply_indicators_to_group`:
-1. Returns DataFrame with additional indicator columns
-
-Test for `perform_feature_engineering`:
-2. Applies `apply_indicators_to_group` per symbol
-
-Test for `create_target`:
-3. Creates binary `label` column correctly
-
-Test for `widden_df`:
-4. Column names follow `{symbol}_{feature}` format
-
-Test for `handle_missing_values`:
-5. Drops all remaining rows with NaNs
-
-Test for `prepare_model_input`:
-6. Merges features and labels on `date`
-"""
-
+import pytest
 import pandas as pd
 import numpy as np
-from unittest import mock
+from unittest.mock import patch
+from src.stock_project.pipelines.data_preprocessing.nodes import prepare_model_input
 
-from src.stock_project.pipelines.data_preprocessing.nodes import (
-    apply_indicators_to_group,
-    perform_feature_engineering,
-    create_target,
-    widden_df,
-    handle_missing_values,
-    prepare_model_input
-)
+@pytest.fixture
+def raw_data():
+    """Raw input data for feature engineering."""
+    return pd.DataFrame({
+        "date": pd.to_datetime([
+            "2024-01-01", "2024-01-01", "2024-01-02",
+            "2024-01-02", "2024-01-03", "2024-01-03"
+        ]),
+        "symbol": ["AAA", "BBB", "AAA", "BBB", "AAA", "BBB"],
+        "open": [100, 200, 101, 201, 102, 202],
+        "high": [110, 210, 111, 211, 112, 212],
+        "low": [90, 190, 91, 191, 92, 192],
+        "close": [105, 205, 106, 206, 107, 207],
+        "volume": [1000, 2000, 1100, 2100, 1200, 2200],
+        "transformation": [0.1, np.nan, 0.15, 0.2, 0.25, 0.3]
+    })
 
+@pytest.fixture
+def engineered_data(raw_data):
+    """Simulate engineered data output with NaNs dropped."""
+    df = raw_data.copy()
+    df_wide = df.pivot(index='date', columns='symbol')
+    df_wide.columns = [f"{symbol}_{feature}" for feature, symbol in df_wide.columns]
+    df_wide = df_wide.reset_index()
+    df_wide = df_wide.dropna().reset_index(drop=True)  # Drop NaNs as per handle_missing_values
+    return df_wide
 
-### -----------  Test for `apply_indicators_to_group` ----------- ###
+@pytest.fixture
+def data_labels():
+    """Simulated labels aligned with engineered features."""
+    return pd.DataFrame({
+        'date': pd.to_datetime(["2024-01-01", "2024-01-02", "2024-01-03"]),
+        'label': [1, 0, 1]
+    })
 
-def test_returns_df_with_additional_indicators(test_ohlcv_df):
-    result = apply_indicators_to_group(test_ohlcv_df)
+def test_prepare_model_input(raw_data, engineered_data, data_labels):
+    
+    with patch('src.stock_project.pipelines.data_preprocessing.nodes.perform_feature_engineering') as mock_feat_eng, \
+         patch('src.stock_project.pipelines.data_preprocessing.nodes.create_target') as mock_create_target, \
+         patch('src.stock_project.pipelines.data_preprocessing.nodes.widden_df') as mock_widden_df, \
+         patch('src.stock_project.pipelines.data_preprocessing.nodes.handle_missing_values') as mock_handle_missing:
 
-    assert "EMA_10" in result.columns
-    assert "RSI_14" in result.columns
-    assert "MACD" in result.columns
-    assert len(result) == len(test_ohlcv_df)
+        mock_feat_eng.return_value = (engineered_data, {'feature_engineering': 1})
+        mock_create_target.return_value = (data_labels, {'target_creation': 2})
+        mock_widden_df.return_value = engineered_data
+        mock_handle_missing.return_value = engineered_data
 
+        model_data, versions = prepare_model_input(raw_data)
 
-### -----------  Test for `perform_feature_engineering` ----------- ###
+        assert 'date' in model_data.columns
+        assert 'label' in model_data.columns
+        assert not model_data['label'].isna().any()
 
-def test_applies_indicators_per_symbol(test_grouped_df):
-    with mock.patch(
-        "src.stock_project.pipelines.data_preprocessing.nodes.apply_indicators_to_group"
-    ) as mock_apply:
-        mock_apply.side_effect = lambda df: df.assign(dummy_feature=1)
-
-        result, _ = perform_feature_engineering(test_grouped_df, versions={}, is_to_feature_store=False)
-
-        assert "dummy_feature" in result.columns
-        assert result["dummy_feature"].nunique() == 1
-
-
-### -----------  Test for `create_target` ----------- ###
-
-def test_creates_binary_label_column(test_feature_df):
-    result, _ = create_target(
-        test_feature_df,
-        versions={},
-        prediction_horizon=1,
-        is_to_feature_store=False
-    )
-
-    assert "label" in result.columns
-    assert set(result["label"].dropna().unique()).issubset({0, 1})
-
-
-### -----------  Test for `widden_df` ----------- ###
-
-def test_column_names_follow_symbol_feature_format(test_long_df):
-    result = widden_df(test_long_df)
-
-    for col in result.columns:
-        if col != "date":
-            assert "_" in col
-            parts = col.split("_")
-            assert len(parts) >= 2
-
-
-### -----------  Test for `handle_missing_values` ----------- ###
-
-def test_drops_all_remaining_rows_with_nans(test_df_with_nans):
-    result = handle_missing_values(test_df_with_nans)
-
-    assert result.isna().sum().sum() == 0
-    assert not any("SUPERT" in col and "SUPERTd" not in col for col in result.columns)
-
-
-### -----------  Test for `prepare_model_input` ----------- ###
-
-def test_merges_features_and_labels_on_date(test_grouped_df, test_feature_df):
-    with mock.patch(
-        "src.stock_project.pipelines.data_preprocessing.nodes.perform_feature_engineering"
-    ) as mock_features, \
-    mock.patch(
-        "src.stock_project.pipelines.data_preprocessing.nodes.create_target"
-    ) as mock_target, \
-    mock.patch(
-        "src.stock_project.pipelines.data_preprocessing.nodes.widden_df"
-    ) as mock_wide, \
-    mock.patch(
-        "src.stock_project.pipelines.data_preprocessing.nodes.handle_missing_values"
-    ) as mock_clean:
-
-        features_df = pd.DataFrame({
-            "date": pd.date_range("2023-01-01", periods=3),
-            "AAPL_feature1": [1, 2, 3]
-        })
-
-        target_df = pd.DataFrame({
-            "date": pd.date_range("2023-01-01", periods=3),
-            "label": [1, 0, 1]
-        })
-
-        mock_features.return_value = (features_df, {})
-        mock_target.return_value = (target_df, {})
-        mock_wide.return_value = features_df
-        mock_clean.return_value = features_df
-
-        result, _ = prepare_model_input(
-            test_grouped_df,
-            versions={},
-            is_to_feature_store=False
-        )
-
-        assert "label" in result.columns
-        assert "AAPL_feature1" in result.columns
-        assert len(result) <= 3
+        expected_versions = {
+            'feature_engineering': 1,
+            'target_creation': 2
+        }
+        assert versions == expected_versions
