@@ -16,13 +16,37 @@ datasources:
   target_feature:
     module_name: great_expectations.datasource
     execution_engine:
-      class_name: PandasExecutionEngine
       module_name: great_expectations.execution_engine
+      class_name: PandasExecutionEngine
     data_connectors:
       default_runtime_data_connector_name:
-        module_name: great_expectations.datasource.data_connector
         batch_identifiers:
           - default_identifier_name
+        module_name: great_expectations.datasource.data_connector
+        class_name: RuntimeDataConnector
+    class_name: Datasource
+  numerical_features:
+    module_name: great_expectations.datasource
+    execution_engine:
+      module_name: great_expectations.execution_engine
+      class_name: PandasExecutionEngine
+    data_connectors:
+      default_runtime_data_connector_name:
+        batch_identifiers:
+          - default_identifier_name
+        module_name: great_expectations.datasource.data_connector
+        class_name: RuntimeDataConnector
+    class_name: Datasource
+  categorical_features:
+    module_name: great_expectations.datasource
+    execution_engine:
+      module_name: great_expectations.execution_engine
+      class_name: PandasExecutionEngine
+    data_connectors:
+      default_runtime_data_connector_name:
+        batch_identifiers:
+          - default_identifier_name
+        module_name: great_expectations.datasource.data_connector
         class_name: RuntimeDataConnector
     class_name: Datasource
 config_variables_file_path: uncommitted/config_variables.yml
@@ -87,8 +111,8 @@ data_docs_sites:
       class_name: DefaultSiteIndexBuilder
 
 anonymous_usage_statistics:
-  enabled: true
   data_context_id: 72b05bad-bfc9-494f-903c-8af76501039f
+  enabled: true
 notebooks:
 # include_rendered_content:
 #   globally: false

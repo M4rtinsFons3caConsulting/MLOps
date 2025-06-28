@@ -28,6 +28,20 @@ class ExpectationHandler(Handler):
         }
         super().__init__(mapping, typeset, *args, **kwargs)
 
+    def handle(self, var_type, name, summary, batch):
+        # Monkey-patch batch to wrap `expect_column_values_to_be_in_set`
+        original_method = batch.expect_column_values_to_be_in_set
+
+        def wrapped_expect_column_values_to_be_in_set(column, value_set, **kwargs):
+            if isinstance(value_set, set):
+                value_set = list(value_set)
+            return original_method(column, value_set, **kwargs)
+
+        batch.expect_column_values_to_be_in_set = wrapped_expect_column_values_to_be_in_set
+
+        # Now call the original handle logic
+        super().handle(var_type, name, summary, batch)
+
 
 class ExpectationsReportV3:
     config: Settings
