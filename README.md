@@ -1,2 +1,2 @@
 # MLOps
-Repository for MLOPS project QQQ Weekly signal forecast.
+Repository for MLOPS project `QQQ Weekly signal forecast` using Kedro.
