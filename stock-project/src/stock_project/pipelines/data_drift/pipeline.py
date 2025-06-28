@@ -10,12 +10,16 @@ from .nodes import apply_drift
 def create_pipeline(**kwargs) -> Pipeline:
     return pipeline([
         node(
-            func=apply_drift
-            ,inputs=[
+            func=apply_drift,
+            inputs=[
                 "X_train"
                 ,"X_test"
-            ]
-            ,outputs="drift_results"
-            ,name="data_drift_node"
+                ,"params:chunk_size"
+            ],
+            outputs=[
+                "univariate_drift_results"
+                ,"multivariate_drift_results"
+            ],
+            name="data_drift_node"
         )
     ])

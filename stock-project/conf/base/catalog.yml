@@ -102,6 +102,10 @@ predictions:
   save_args:
     index: True
 
-drift_results:
+univariate_drift_results:
   type: kedro_datasets.pandas.CSVDataset
-  filepath: data/06_reporting/drift_results.csv
+  filepath: data/06_reporting/uv_drift_results.csv
+
+multivariate_drift_results:
+  type: kedro_datasets.pandas.CSVDataset
+  filepath: data/06_reporting/mv_drift_results.csv

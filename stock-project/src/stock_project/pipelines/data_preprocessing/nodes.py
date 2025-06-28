@@ -25,7 +25,11 @@ from kedro.framework.project import settings
 import mlflow
 
 # Feature Store + Expectations
-from stock_project.pipelines.data_ingestion.nodes import to_feature_store, build_expectation_suite
+try:
+    from src.stock_project.pipelines.data_ingestion.nodes import to_feature_store, build_expectation_suite
+except ModuleNotFoundError: # Work around for directory hell
+    from stock_project.pipelines.data_ingestion.nodes import to_feature_store, build_expectation_suite
+
 from great_expectations.data_context import DataContext
 
 # Configs

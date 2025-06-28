@@ -58,6 +58,7 @@ def model_train(
         logger.info("✅ Model trained and logged")
 
         # SHAP output
+        fig = None
         shap_values = None
         try:
             model = pipeline.named_steps.get("model") or pipeline.steps[-1][1]

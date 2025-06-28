@@ -4,6 +4,7 @@ import numpy as np
 from unittest.mock import patch
 from src.stock_project.pipelines.data_preprocessing.nodes import prepare_model_input
 
+
 @pytest.fixture
 def raw_data():
     """Raw input data for feature engineering."""

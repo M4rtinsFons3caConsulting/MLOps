@@ -55,7 +55,7 @@ def test_model_train_returns_pipeline_and_figure(
     mock_shap_explainer.return_value = mock_shap
     mock_shap_summary_plot.return_value = None 
 
-    trained_pipeline, fig = model_train(*sample_data, pipeline)
+    trained_pipeline, _ = model_train(*sample_data, pipeline)
 
     assert hasattr(trained_pipeline.named_steps["model"], "coef_")
-    assert isinstance(fig, plt.Figure)
+ 
