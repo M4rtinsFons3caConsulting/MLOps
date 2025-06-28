@@ -782,6 +782,8 @@ pyparsing==2.4.7
     #   matplotlib
 pyproject-hooks==1.2.0
     # via build
+pytest==8.0.2
+    # via -r requirements.txt
 python-dateutil==2.9.0.post0
     # via
     #   analytics-python
